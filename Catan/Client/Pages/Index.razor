@@ -1,0 +1,92 @@
+﻿@page "/"
+@inject IJSRuntime JS
+@inject HttpClient Http
+
+<PageTitle>Home</PageTitle>
+
+@if (loginResult != null)
+{
+    @if (loginResult.Success)
+    {
+        <p>Login successful!</p>
+    }
+    else
+    {
+        <p>Login has failed: @loginResult.Value</p>
+    }
+}
+<div class="container">
+    <div class="row">
+        <center><h1>Enter your login credentials</h1></center>
+        <br />
+    </div>
+    <div class="row justify-content-center">
+        <form class="col-6" @onsubmit="TryLogin">
+            <div class="form-outline mb-4">
+                <label class="form-label" for="nameInput">Username: </label>
+                <input type="text" id="nameInput" class="form-control" @bind-value="LoginDTO.Username" />
+            </div>
+
+            <div class="form-outline mb-4">
+                <label class="form-label" for="passInput">Password:</label>
+                <input type="password" id="passInput" class="form-control" @bind-value="LoginDTO.Password" />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
+
+            <div class="text-center">
+                <p>Not a member? <a href="/register">Register</a></p>
+            </div>
+        </form>
+    </div>
+    
+</div>
+
+
+
+@code {
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+
+    private LoginDTO LoginDTO { get; set; } = new LoginDTO();
+
+    private ApiDTO<string>? loginResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var expire = await JS.InvokeAsync<string>("localStorage.getItem", "loginTokenExpire");
+        if (expire is not null)
+        {
+            DateTime time = DateTime.Parse(expire);
+            if (time>DateTime.Now)
+            {
+                var loginToken = await JS.InvokeAsync<string>("localStorage.getItem", "loginToken");
+                Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginToken);
+                
+                NavigationManager!.NavigateTo("/lobby");
+            }
+        }
+        
+    }
+
+    private async void TryLogin()
+    {
+        var response= await Http.PostAsJsonAsync("api/user/login",LoginDTO);
+        loginResult = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
+        if (loginResult!.Success)
+        {
+            Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginResult.Value);
+            await JS.InvokeVoidAsync("localStorage.setItem", "loginToken", loginResult.Value);
+            await JS.InvokeVoidAsync("localStorage.setItem", "loginTokenExpire", DateTime.Now.AddHours(2));
+            await JS.InvokeVoidAsync("localStorage.setItem", "userName",LoginDTO.Username);
+            GoToOtherPage();
+        }
+        StateHasChanged();
+    }
+
+    private void GoToOtherPage()
+    {
+        NavigationManager!.NavigateTo("/lobby");
+    }
+}
+

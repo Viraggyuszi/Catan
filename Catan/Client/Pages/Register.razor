@@ -1,0 +1,43 @@
+﻿@page "/register"
+@inject HttpClient Http
+<h3>Register</h3>
+
+@if (registrationResult != null)
+{
+    @if (registrationResult.Success)
+    {
+        <p>Registration successful!</p>
+    }
+    else
+    {
+        <p>Registration failed: @registrationResult.Value</p>
+    }
+}
+
+
+<div>
+    <form div="form control" @onsubmit="TryRegister">
+        <label for="emailInput">Email:</label>
+        <input type="text" @bind-value="RegisterDTO.Email" />
+        <label for="nameInput">Name:</label>
+        <input id="nameInput" type="text" @bind-value="RegisterDTO.Username" />
+        <label for="passInput">Password:</label>
+        <input id="passInput" type="password" @bind-value="RegisterDTO.Password" />
+        <input type="submit" value="Register" />
+    </form>
+    <a href="/"> Already have account? Click to login!</a>
+</div>
+
+@code {
+
+    private RegisterDTO RegisterDTO { get; set; } = new RegisterDTO();
+
+    private ApiDTO<string>? registrationResult;
+
+    private async void TryRegister()
+    {
+        var response = await Http.PostAsJsonAsync("api/user/register", RegisterDTO);
+        registrationResult = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
+        StateHasChanged();
+    }
+}

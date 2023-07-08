@@ -1,0 +1,324 @@
+﻿using Catan.Shared.Model;
+using Microsoft.AspNetCore.SignalR;
+using System.Drawing;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Database;
+using Database.Data;
+using BLL.Implementations;
+using BLL.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Catan.Shared.Request;
+using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+
+namespace Catan.Server.Hubs
+{
+	[Authorize]
+	public class GameHub : Hub
+	{
+		private readonly IGameService _gameService;
+		public GameHub(IGameService gameService)
+		{
+			_gameService = gameService;
+		}
+		public override async Task OnConnectedAsync()
+		{
+			await base.OnConnectedAsync();
+		}
+		public async Task JoinGroup(string groupName)
+		{
+			await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+		}
+		public async Task LeaveGroup(string groupName)
+		{
+			await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+		}
+	
+		
+		public async Task SaveConnectionId(Actor actor, string conId, string guidstring)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			var success=_gameService.RegisterPlayerConnectionId(Guid.Parse(guidstring), actor.Name!, conId);
+			if (success)
+			{
+				Guid guid = Guid.Parse(guidstring);
+				_gameService.StartGame(guid);
+				await Clients.Group(guid.ToString()).SendAsync("ProcessCurrentPlayer",GetCurrentPlayer(guidstring));
+				await CallNextPlayer(guid);
+			}
+		}
+		public async Task EndPlayerTurn(Actor actor, string guidstring)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			if (actor.Name !=GetCurrentPlayer(guidstring))
+			{
+				throw new Exception("You can't end your turn during someone else's turn");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			_gameService.NextTurn(guid);
+			await Clients.Caller.SendAsync("TurnEnded");
+			await CallNextPlayer(guid);
+		}
+		public async Task RollDices(Actor actor, string guidstring)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			var response = _gameService.RollDices(guid);
+			if (response.Success)
+			{
+				var dices = response.Value!;
+				if (dices[0] + dices[1] == 7)
+				{
+					ResolveDiceRollSeven(guid);
+				}
+				await Clients.Caller.SendAsync("DiceRolled");
+				await Clients.Group(guid.ToString()).SendAsync("ProcessDiceRolled", dices);
+				await Clients.Group(guid.ToString()).SendAsync("FetchResources");
+			}
+			else
+			{
+				throw new Exception("Something went wrong with dice rolling");
+			}
+			
+		}
+		private void ResolveDiceRollSeven(Guid guid)
+		{
+			var sevenOrMoreResourcesResponse = _gameService.GetPlayersConnectionIdWithSevenOrMoreResources(guid);
+			if (sevenOrMoreResourcesResponse.Success)
+			{
+				var conIds = sevenOrMoreResourcesResponse.Value!;
+				foreach (var connection in conIds)
+				{
+					//Clients.Client(connection).SendAsync("ResolveSevenRoll"); // kliens oldalon kezelni, hogy nyersanyagot eldobjon
+				}
+			}
+			else
+			{
+				throw new Exception("Something went wrong with getting the players with 7 or more resources");
+			}
+			var conId = _gameService.GetActivePlayerConnectionId(guid);
+			if (conId is not null)
+			{
+				Clients.Client(conId).SendAsync("ResolveRobberMovement"); // rabló mozgatását kliens oldalról kezelni
+			}
+			//a felező algoritmus visszatér az eldobott nyersanyagokkal, sszerver oldalon ellenőrizni, hogy tényleg jó mennyiséget dobott-e el
+			//ha igen, ha minden pacek, akkor pedig mindenkinek frissíti a játékot.
+		}
+		public string GetMap(string guidstring)
+		{
+			Guid guid = Guid.Parse(guidstring);
+			var map = _gameService.GetGame(guid).GameMap;
+			var options = new JsonSerializerOptions
+			{
+				MaxDepth = 1000,
+				ReferenceHandler = ReferenceHandler.Preserve,
+				IncludeFields=true
+			};
+			string res= JsonSerializer.Serialize(map, options);
+			return res;
+		}
+		public string GetCurrentPlayer(string guidstring)
+		{
+			Guid guid = Guid.Parse(guidstring);
+			var res = _gameService.GetActivePlayer(guid);
+			if (res is not null)
+			{
+				return res.Name!;
+			}
+			return null!;
+		}
+		public async Task CallNextPlayer(Guid guid)
+		{
+			var connection = _gameService.GetActivePlayerConnectionId(guid);
+			if (connection is null)
+			{
+				return;
+			}
+			if (_gameService.IsGameOver(guid))
+			{
+				await Clients.Group(guid.ToString()).SendAsync("GameOver");
+			}
+			else if (_gameService.IsInitialRound(guid))
+			{
+				await Clients.Client(connection).SendAsync("PlaceInitialVillage"); //hívás ha initial kör van
+			}
+			else
+			{
+				await Clients.Client(connection).SendAsync("TakeNormalTurn"); //hívás ha már nem az első kör van
+			}
+		}
+		public async Task ClaimInitialVillage(Actor actor,string guidstring,int id)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid= Guid.Parse(guidstring);
+			if (!_gameService.IsInitialRound(guid))
+			{
+				throw new Exception("It's not starting round");
+			}
+			if (_gameService.GetActivePlayer(guid).Name==actor.Name!)
+			{
+				try
+				{
+					_gameService.ClaimInitialCorner(guid, id, actor.Name!);
+					await NotifyMapChanged(guid);
+					await NotifyClients(guid);
+					await Clients.Caller.SendAsync("PlaceInitialRoad");
+				}
+				catch (Exception e)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
+				}
+			}
+		}
+		public async Task ClaimInitialRoad(Actor actor, string guidstring,int id)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid= Guid.Parse(guidstring);
+			if (!_gameService.IsInitialRound(guid))
+			{
+				throw new Exception("It's not starting round");
+			}
+			if (_gameService.GetActivePlayer(guid).Name == actor.Name!)
+			{
+				try
+				{
+					_gameService.ClaimInitialRoad(guid, id, actor.Name!);
+					await NotifyMapChanged(guid);
+					await Clients.Caller.SendAsync("InitialTurnDone");
+				}
+				catch (Exception e)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
+					return;
+				}
+				_gameService.NextTurn(guid);
+				await CallNextPlayer(guid);
+				await NotifyClients(guid);
+			}
+		}
+		private async Task NotifyClients(Guid guid)
+		{
+			await Clients.Group(guid.ToString()).SendAsync("ProcessCurrentPlayer",GetCurrentPlayer(guid.ToString()));
+			await Clients.Group(guid.ToString()).SendAsync("FetchResources");
+		}
+		private async Task NotifyMapChanged(Guid guid)
+		{
+			await Clients.Group(guid.ToString()).SendAsync("ProcessMap", GetMap(guid.ToString()));
+		}
+
+		public async Task ClaimCorner(Actor actor, string guidstring, int id)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			if (_gameService.IsInitialRound(guid))
+			{
+				throw new Exception("It's starting round");
+			}
+			if (_gameService.GetActivePlayer(guid).Name == actor.Name!)
+			{
+				try
+				{
+					_gameService.ClaimCorner(guid, id, actor.Name!);
+					await NotifyMapChanged(guid);
+					await NotifyClients(guid);
+				}
+				catch (Exception e)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
+				}
+			}
+		}
+
+		public async Task ClaimEdge(Actor actor, string guidstring, int id)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			if (_gameService.IsInitialRound(guid))
+			{
+				throw new Exception("It's starting round");
+			}
+			if (_gameService.GetActivePlayer(guid).Name == actor.Name!)
+			{
+				try
+				{
+					_gameService.ClaimEdge(guid, id, actor.Name!);
+					await NotifyMapChanged(guid);
+					await NotifyClients(guid);
+				}
+				catch (Exception e)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
+					return;
+				}
+			}
+		}
+
+		public FetchInventoryDTO GetPlayersInventories(Actor actor, string guidstring)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			FetchInventoryDTO result=new FetchInventoryDTO();
+			result.Inventory = _gameService.GetPlayersInventory(guid,actor.Name);
+			result.OthersInventory=_gameService.GetOtherPlayersInventory(guid,actor.Name);
+			return result;
+		}
+
+		public List<Player> GetPlayerList(Actor actor, string guidstring)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			return _gameService.GetPlayers(guid);
+		}
+
+		public async Task MoveRobber(Actor actor, string guidstring, int id)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			if (_gameService.GetActivePlayer(guid).Name == actor.Name!)
+			{
+				try
+				{
+					_gameService.MoveRobber(guid, id, actor.Name!);
+					await NotifyMapChanged(guid);
+					await NotifyClients(guid);
+					await Clients.Caller.SendAsync("RobberMovementResolved");
+				}
+				catch (Exception e)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
+				}
+			}
+		}
+	}
+}

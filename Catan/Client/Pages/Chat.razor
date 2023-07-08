@@ -1,0 +1,108 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<PageTitle>Chat</PageTitle>
+
+
+<div class="container-fluid p-0 m-0">
+	<div class="col-12 p-2 m-0" @ref=chatAreaReference id="messagesList" style="overflow-y:scroll; height:300px">
+		@foreach (var chatMessage in messages)
+		{
+			@chatMessage
+			<br />
+		}
+	</div>
+	<div class="col-12 p-2 m-0">
+		<form @onsubmit="Send">
+			<div class="container-fluid">
+				<div class="input-group">
+					<input class="form-control" @bind="messageInput" />
+					<input class="btn btn-secondary" type="submit" value="Send" disabled="@(!IsConnected)" />
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+
+
+
+@code {
+	ElementReference chatAreaReference;
+	private HubConnection? hubConnection;
+	private List<string> messages = new List<string>();
+
+	private string? userInput;
+
+	private string? messageInput;
+
+	private string? currentChatGroup;
+
+	protected override async Task OnInitializedAsync()
+	{
+
+		hubConnection = new HubConnectionBuilder()
+			.WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+			.Build();
+
+		hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+		{
+			var encodedMsg = $"{user}: {message}";
+			messages.Add(encodedMsg);
+			StateHasChanged();
+			JS.InvokeVoidAsync("scrollToEnd", new object[] { chatAreaReference });
+		});
+
+		await hubConnection.StartAsync();
+
+		await hubConnection.InvokeAsync("JoinGroup", "default");
+		currentChatGroup = "default";
+
+		userInput = await JS.InvokeAsync<string>("localStorage.getItem", "userName");
+	}
+	private async Task Send()
+	{
+		if (hubConnection is not null)
+		{
+			await hubConnection.SendAsync("SendMessageToGroup", currentChatGroup, userInput, messageInput);
+			messageInput = "";
+		}
+	}
+
+	public bool IsConnected =>
+		hubConnection?.State == HubConnectionState.Connected;
+
+	public async ValueTask DisposeAsync()
+	{
+		if (hubConnection is not null)
+		{
+			await hubConnection.DisposeAsync();
+		}
+	}
+
+	public void SendDebugMessage(string? messageToWrite)
+	{
+		if (messageToWrite != null)
+		{
+			messages.Add("DEBUG: " + messageToWrite);
+			JS.InvokeVoidAsync("scrollToEnd", new object[] { chatAreaReference });
+			StateHasChanged();
+		}
+	}
+
+	public async Task ChangeSignalRGroup(string name)
+	{
+		if (currentChatGroup is null)
+		{
+			await hubConnection!.InvokeAsync("LeaveGroup", "default");
+		}
+		else
+		{
+			await hubConnection!.InvokeAsync("LeaveGroup", currentChatGroup);
+		}
+		await hubConnection!.InvokeAsync("JoinGroup", name);
+		currentChatGroup = name;
+	}
+}

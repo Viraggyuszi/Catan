@@ -1,0 +1,239 @@
+﻿@page "/lobby"
+@using Microsoft.AspNetCore.SignalR.Client;
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<center><h3>Lobbies</h3></center>
+
+@if (lobbyCreating)
+{
+	<div class="container-fluid">
+		<div class="col-md-4">
+			<div class="input-group">
+				<input type="text" class="form-control" placeholder="Name of new lobby" @bind-value=NewLobbyName>
+				<div class="input-group-append">
+					<button class="btn btn-primary" @onclick=CreateNewLobby>Save</button>
+					<button class="btn btn-secondary" @onclick=CancelNewLobbyCreating>Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+else
+{
+	<button class="btn btn-secondary btn-sm" disabled="@(!CanJoinToGame())" @onclick="ToggleCreatingLobby">Create New Lobby</button>
+}
+	<div class="py-5">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-9">
+					@for (int i = 0; i < (lobbies.Count/3)+1; i++)
+					{
+						int j = 0;
+						<div class="row justify-content-start">
+							@while (j<3 && i*3+j<lobbies.Count)
+							{
+								var lobby = lobbies[i * 3 + j];
+								j++;
+								<div class="p-2 px-4 col-md-4">
+									<div class="card h-100 border-dark">
+										<div class="card-header">@lobby.Name</div>
+										<div class="card-body text-dark">
+											<ul>
+												@foreach (var player in lobby.Players!)
+												{
+													<li>@player.Name</li>
+												}
+											</ul>
+										</div>
+										<div class="card-footer bg-transparent">
+											<div class="d-flex justify-content-evenly">
+												<button class="btn btn-secondary btn-sm" disabled="@(!CanJoinToGame())" @onclick="()=>JoinLobby(lobby)">Join Lobby</button>
+												<button class="btn btn-secondary btn-sm" disabled="@(!CanLeaveLobby(lobby))" @onclick="()=>LeaveLobby(lobby)">Leave Lobby</button>
+												<button class="btn btn-secondary btn-sm" disabled="@(!CanStartGame(lobby))" @onclick="()=>StartLobby(lobby)">Start Game</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							}
+						</div>
+					}
+				</div>
+				<div class="col-md-3">
+					<Chat @ref=ChatComponent />
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+@code {
+	[Inject]
+	private NavigationManager? NavigationManager { get; set; }
+
+	private Chat? ChatComponent { get; set; }
+
+	private List<Lobby> lobbies = new List<Lobby>();
+
+	private HubConnection? NotificationHubConnection;
+
+	private string NewLobbyName = "";
+	private bool lobbyCreating = false;
+
+
+	private Actor actor = new Actor();
+
+	private bool CanJoinToGame()
+	{
+		foreach (var lobby in lobbies)
+		{
+			if (lobby.Players!.Find(p => p.Name == actor.Name) is not null)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private bool CanLeaveLobby(Lobby lobby)
+	{
+		if (lobby.Players!.Find(p => p.Name == actor.Name) is not null)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	private bool CanStartGame(Lobby lobby)
+	{
+		if (lobby.Players!.Count >= 2 && lobby.Players[0].Name == actor.Name)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		NotificationHubConnection = new HubConnectionBuilder()
+			.WithUrl(Navigation.ToAbsoluteUri("/notificationhub"))
+			.Build();
+
+		await NotificationHubConnection.StartAsync();
+
+		await NotificationHubConnection.InvokeAsync("JoinGroup", "default");
+
+		actor.Name = await JS.InvokeAsync<string>("localStorage.getItem", "userName");
+		actor.Token = await JS.InvokeAsync<string>("localStorage.getItem", "loginToken");
+		Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", actor.Token);
+
+		NotificationHubConnection.On("RefreshLobbiesList", async () =>
+		{
+			await GetAllLobby();
+		});
+		NotificationHubConnection.On<string>("StartGame", async (groupname) =>
+		{
+			await JS.InvokeVoidAsync("localStorage.setItem", "GameGuid", groupname);
+			NavigationManager!.NavigateTo("/catan");
+		});
+
+		await GetAllLobby();
+
+		
+
+	}
+
+	private async Task GetAllLobby()
+	{
+		var response = await Http.GetFromJsonAsync<ApiDTO<List<Lobby>>>("api/lobby/getall");
+		lobbies = response!.Value!;
+		StateHasChanged();
+	}
+
+	private void ToggleCreatingLobby()
+	{
+		lobbyCreating = true;
+		StateHasChanged();
+	}
+
+	private async Task NotifyOthers()
+	{
+		await NotificationHubConnection!.InvokeAsync("LobbiesChanged");
+	}
+
+	private async void CreateNewLobby()
+	{
+		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = new Actor() { Name = actor.Name, Token = actor.Token }, Lobby = new Lobby { Name = NewLobbyName } };
+		var response = await Http.PostAsJsonAsync("api/lobby/create", playerLobbyDTO);
+		var lobby = await response.Content.ReadFromJsonAsync<ApiDTO<Lobby>>();
+		if (lobby!.Success)
+		{
+			lobbies.Add(lobby!.Value!);
+			lobbyCreating = false;
+			NewLobbyName = "";
+			JoinLobby(lobby.Value!);
+			StateHasChanged();
+			await NotifyOthers();
+		}
+	}
+
+	private void CancelNewLobbyCreating()
+	{
+		NewLobbyName = "";
+		lobbyCreating = false;
+		StateHasChanged();
+	}
+
+	private async void JoinLobby(Lobby lobby)
+	{
+		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = new Actor() { Name = actor.Name, Token = actor.Token }, Lobby = lobby };
+		var response = await Http.PostAsJsonAsync<PlayerLobbyDTO>("api/lobby/join", playerLobbyDTO);
+		var message = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
+		if (message!.Success)
+		{
+			await NotifyOthers();
+			await ChatComponent!.ChangeSignalRGroup(message.Value!);
+			await NotificationHubConnection!.InvokeAsync("JoinGroup", message.Value);
+		}
+		else
+		{
+			//valami hibakiírás?
+		}
+	}
+
+	private async void LeaveLobby(Lobby lobby)
+	{
+		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = new Actor() { Name = actor.Name, Token = actor.Token }, Lobby = lobby };
+		var response = await Http.PostAsJsonAsync<PlayerLobbyDTO>("api/lobby/leave", playerLobbyDTO);
+		var message = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
+		if (message!.Success)
+		{
+			await NotifyOthers();
+			await ChatComponent!.ChangeSignalRGroup("default");
+			await NotificationHubConnection!.InvokeAsync("LeaveGroup", message.Value);
+		}
+		else
+		{
+			//valami hibakiírás?
+		}
+	}
+
+	private async void StartLobby(Lobby lobby)
+	{
+		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = new Actor() { Name = actor.Name, Token = actor.Token }, Lobby = lobby };
+		var response = await Http.PostAsJsonAsync<PlayerLobbyDTO>("api/lobby/start", playerLobbyDTO);
+		var message = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
+		if (message!.Success)
+		{
+			await NotificationHubConnection!.InvokeAsync("GameHasStarted", lobby.GuID);
+			await NotifyOthers();
+		}
+		else
+		{
+			//valami hibakiírás?
+		}
+	}
+
+}

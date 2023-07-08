@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catan.Server", "Catan\Server\Catan.Server.csproj", "{CE1FF004-176B-4016-860C-DB87494060B9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{29667120-95D3-4719-9E00-7FEBBF9ECA5B} = {29667120-95D3-4719-9E00-7FEBBF9ECA5B}
+		{C713360F-13F3-45F0-B742-DD1DEE013922} = {C713360F-13F3-45F0-B742-DD1DEE013922}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catan.Client", "Catan\Client\Catan.Client.csproj", "{00C50ABA-3C3E-4AF4-B819-44AD2447C5E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catan.Shared", "Catan\Shared\Catan.Shared.csproj", "{2A20049B-77B2-42CB-B67B-3BDE7718ED97}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BLL", "BLL\BLL.csproj", "{29667120-95D3-4719-9E00-7FEBBF9ECA5B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2A20049B-77B2-42CB-B67B-3BDE7718ED97} = {2A20049B-77B2-42CB-B67B-3BDE7718ED97}
+		{C713360F-13F3-45F0-B742-DD1DEE013922} = {C713360F-13F3-45F0-B742-DD1DEE013922}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{C713360F-13F3-45F0-B742-DD1DEE013922}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2A20049B-77B2-42CB-B67B-3BDE7718ED97} = {2A20049B-77B2-42CB-B67B-3BDE7718ED97}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CE1FF004-176B-4016-860C-DB87494060B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE1FF004-176B-4016-860C-DB87494060B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE1FF004-176B-4016-860C-DB87494060B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE1FF004-176B-4016-860C-DB87494060B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00C50ABA-3C3E-4AF4-B819-44AD2447C5E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00C50ABA-3C3E-4AF4-B819-44AD2447C5E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00C50ABA-3C3E-4AF4-B819-44AD2447C5E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00C50ABA-3C3E-4AF4-B819-44AD2447C5E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A20049B-77B2-42CB-B67B-3BDE7718ED97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A20049B-77B2-42CB-B67B-3BDE7718ED97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A20049B-77B2-42CB-B67B-3BDE7718ED97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A20049B-77B2-42CB-B67B-3BDE7718ED97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29667120-95D3-4719-9E00-7FEBBF9ECA5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29667120-95D3-4719-9E00-7FEBBF9ECA5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29667120-95D3-4719-9E00-7FEBBF9ECA5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29667120-95D3-4719-9E00-7FEBBF9ECA5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C713360F-13F3-45F0-B742-DD1DEE013922}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C713360F-13F3-45F0-B742-DD1DEE013922}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C713360F-13F3-45F0-B742-DD1DEE013922}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C713360F-13F3-45F0-B742-DD1DEE013922}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {40B5E836-87CC-487E-9DBD-B276EFFA4DE1}
+	EndGlobalSection
+EndGlobal
