@@ -462,7 +462,7 @@ namespace BLL.Implementations
             {
 				return GameServiceResponses.InvalidGame;
             }
-			return GameServiceResponses.GameOver;
+			return GameServiceResponses.GameOver; //TODO why game over???
 		}
 		public List<Player>? GetPlayers(Guid guid)
 		{

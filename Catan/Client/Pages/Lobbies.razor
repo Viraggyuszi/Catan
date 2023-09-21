@@ -172,7 +172,7 @@ else
 		if (lobby is not null && lobby.Success)
 		{
 			await GetAllLobby();
-			//await JoinLobby(lobbies.First(l=>l.Name==NewLobbyName));
+			await JoinLobby(lobbies.First(l=>l.Name==NewLobbyName));
 			NewLobbyName = "";
 			lobbyCreating = false;
 			await NotifyOthers();

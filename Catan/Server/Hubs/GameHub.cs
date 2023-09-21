@@ -42,7 +42,7 @@ namespace Catan.Server.Hubs
 				throw new Exception("Using other player's name");
 			}
 			var success = _gameService.RegisterPlayerConnectionId(Guid.Parse(guidstring), actor.Name, conId);
-			if (success== GameServiceResponses.Success)
+			if (success== GameServiceResponses.GameCanStart)
 			{
 				Guid guid = Guid.Parse(guidstring);
 				_gameService.StartGame(guid);

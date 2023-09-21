@@ -9,9 +9,9 @@ namespace Catan.Shared.Model
 {
 	public class Player
 	{
-		public string Name { get; set; } //TOOD refactor proper ctor for non-nullable properties
-		public string Color { get; set; }
-		public int Points { get; set; }
+		public string? Name { get; set; } //TOOD refactor proper ctor for non-nullable properties
+		public string? Color { get; set; }
+		public int? Points { get; set; }
         public Dictionary<Resources, int> ResourcesInventory { get; set; }
         public string? connectionID;
         public Player()
