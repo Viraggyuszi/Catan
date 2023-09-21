@@ -1,20 +1,15 @@
 ﻿using Catan.Shared.Model;
 using Catan.Shared.Request;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+using Catan.Shared.Response;
 
 namespace BLL.Interfaces
 {
 	public interface ILobbyService
 	{
-		public Lobby createLobby(string name);
-		public ApiDTO<string> addPlayerToLobby(Player player, Guid guid);
-		public ApiDTO<string> removePlayerFromLobby(Player player, Guid guid);
-		public ApiDTO<string> StartLobbyGame(Guid guid);
-		public List<Lobby> GetAllLobby();
+		public InMemoryDatabaseLobbyResponses createLobby(string name);
+		public InMemoryDatabaseLobbyResponses AddPlayerToLobby(Player player, Guid guid);
+		public InMemoryDatabaseLobbyResponses RemovePlayerFromLobby(Player player, Guid guid);
+		public InMemoryDatabaseGameResponses StartLobbyGame(Guid guid);
+		public List<Lobby> GetAllLobbies();
 	}
 }

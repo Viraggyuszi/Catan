@@ -83,7 +83,7 @@ else
 	private bool lobbyCreating = false;
 
 
-	private Actor actor = new Actor();
+	private Actor? actor;
 
 	private bool CanJoinToGame()
 	{
@@ -165,7 +165,7 @@ else
 
 	private async void CreateNewLobby()
 	{
-		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = new Actor() { Name = actor.Name, Token = actor.Token }, Lobby = new Lobby { Name = NewLobbyName } };
+		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = actor, Lobby = new Lobby { Name = NewLobbyName } };
 		var response = await Http.PostAsJsonAsync("api/lobby/create", playerLobbyDTO);
 		var lobby = await response.Content.ReadFromJsonAsync<ApiDTO<Lobby>>();
 		if (lobby!.Success)
@@ -188,7 +188,7 @@ else
 
 	private async void JoinLobby(Lobby lobby)
 	{
-		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = new Actor() { Name = actor.Name, Token = actor.Token }, Lobby = lobby };
+		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = actor, Lobby = lobby };
 		var response = await Http.PostAsJsonAsync<PlayerLobbyDTO>("api/lobby/join", playerLobbyDTO);
 		var message = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
 		if (message!.Success)
@@ -205,7 +205,7 @@ else
 
 	private async void LeaveLobby(Lobby lobby)
 	{
-		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = new Actor() { Name = actor.Name, Token = actor.Token }, Lobby = lobby };
+		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = actor, Lobby = lobby };
 		var response = await Http.PostAsJsonAsync<PlayerLobbyDTO>("api/lobby/leave", playerLobbyDTO);
 		var message = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
 		if (message!.Success)
@@ -222,7 +222,7 @@ else
 
 	private async void StartLobby(Lobby lobby)
 	{
-		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = new Actor() { Name = actor.Name, Token = actor.Token }, Lobby = lobby };
+		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = actor, Lobby = lobby };
 		var response = await Http.PostAsJsonAsync<PlayerLobbyDTO>("api/lobby/start", playerLobbyDTO);
 		var message = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
 		if (message!.Success)

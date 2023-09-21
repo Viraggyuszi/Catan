@@ -10,4 +10,5 @@ namespace Catan.Shared.Model
     {
         Wood,Ore,Wheat,Sheep,Brick
     }
+    
 }

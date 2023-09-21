@@ -1,6 +1,7 @@
 ﻿using BLL.Interfaces;
 using Catan.Shared.Model;
 using Catan.Shared.Request;
+using Catan.Shared.Response;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using System;
 using System.Collections.Concurrent;
@@ -16,142 +17,56 @@ namespace BLL.Implementations
 {
 	public class GameService : IGameService
 	{
-		public ConcurrentDictionary<Guid, Game> GuidGamePairs { get; set; }
-		public ConcurrentDictionary<Guid, Lobby> GuidLobbyPairs { get; set; }
-		public GameService()
+		private readonly IInMemoryDatabaseGame _inMemoryDatabaseGame;
+		private readonly IMapService _mapService;
+		public GameService(IInMemoryDatabaseGame inMemoryDatabaseGame, IMapService mapService) 
 		{
-			GuidGamePairs = new ConcurrentDictionary<Guid, Game>();
-			GuidLobbyPairs = new ConcurrentDictionary<Guid, Lobby>();
+			_inMemoryDatabaseGame = inMemoryDatabaseGame;
+			_mapService = mapService;
 		}
-		public Lobby CreateLobby(string name)
+		public InMemoryDatabaseGameResponses RegisterGame(Guid guid, Game game)
 		{
-			foreach (var pair in GuidLobbyPairs)
-			{
-				if (pair.Value.Players.Count < 1)
-				{
-					GuidLobbyPairs.TryRemove(pair.Key, out _);
-				}
-			}
-			var guid = Guid.NewGuid();
-			var NewItem = new Lobby();
-			NewItem.Name = name;
-			NewItem.Players = new List<Player>();
-			NewItem.GuID = guid;
-			GuidLobbyPairs.TryAdd(guid, NewItem);
-			return NewItem;
+            var newMap = _mapService.GenerateMap();
+			game.GameMap= newMap;
+			return _inMemoryDatabaseGame.AddGame(guid, game);
 		}
-		public List<Lobby> GetLobbies()
+		public Map? GetGameMap(Guid guid)
 		{
-			var ret = new List<Lobby>();
-			foreach (var guidlobbypair in GuidLobbyPairs)
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
 			{
-				ret.Add(guidlobbypair.Value);
+				return null;
 			}
-			return ret;
+            return game.GameMap;
 		}
-		public ApiDTO<string> AddPlayerToLobby(Player player, Guid guid)
+		public GameServiceResponses RegisterPlayerConnectionId(Guid guid, string name, string connectionId)
 		{
-			var lobby = GuidLobbyPairs.GetValueOrDefault(guid);
-			if (lobby is null)
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
 			{
-				return new ApiDTO<string>() { Success = false, Value = "Not valid lobby" };
+				return GameServiceResponses.InvalidGame;
 			}
-			else if (lobby.Players.Count >= 4)
+			var player = game.PlayerList.FirstOrDefault(x => x.Name == name);
+			if (player is null)
 			{
-				return new ApiDTO<string>() { Success = false, Value = "Lobby is already full" };
+				return GameServiceResponses.InvalidMember;
 			}
-			else if (lobby.Players.Find(p => p.Name == player.Name) is not null)
-			{
-				return new ApiDTO<string>() { Success = false, Value = "You're already a member of the lobby" };
-			}
-			else
-			{
-				GuidLobbyPairs.Remove(guid, out _);
-				lobby.Players.Add(player);
-				GuidLobbyPairs.TryAdd(guid, lobby);
-				return new ApiDTO<string>() { Success = true, Value = guid.ToString() };
-			}
-		}
-		public ApiDTO<string> RemovePlayerFromLobby(Player player, Guid guid)
-		{
-			var lobby = GuidLobbyPairs.GetValueOrDefault(guid);
-			if (lobby is null)
-			{
-				return new ApiDTO<string>() { Success = false, Value = "Not valid lobby" };
-			}
-			var element = lobby.Players.Find(p => p.Name == player.Name);
-			if (element is null)
-			{
-				return new ApiDTO<string>() { Success = false, Value = "You're not a member of the lobby" };
-			}
-			else
-			{
-				GuidLobbyPairs.Remove(guid, out _);
-				lobby.Players!.Remove(element);
-				if (lobby.Players.Count > 0)
-				{
-					GuidLobbyPairs.TryAdd(guid, lobby);
-				}
-				return new ApiDTO<string>() { Success = true, Value = "ok" };
-			}
-		}
-		public ApiDTO<string> RegisterGame(Guid guid, Map map)
-		{
-			var lobby = GuidLobbyPairs.GetValueOrDefault(guid);
-			if (lobby is null)
-			{
-				return new ApiDTO<string>() { Success = false, Value = "Not valid lobby" };
-			}
-			Game game = new Game();
-			foreach (var player in lobby.Players!)
-			{
-				game.PlayerList.Add(new GamePlayer(player));
-			}
-			Color[] colors = { Color.Blue, Color.Red, Color.Green, Color.Orange };
-			int i = 0;
-			foreach (var player in game.PlayerList)
-			{
-				player.Points = 0;
-				player.Color = colors[i++].Name;
-			}
-			game.GameMap = map;
-			if (GuidGamePairs.TryAdd(guid, game))
-			{
-				GuidLobbyPairs.Remove(guid, out _);
-				return new ApiDTO<string>() { Success = true, Value = "ok" };
-			}
-			else
-			{
-				return new ApiDTO<string>() { Success = false, Value = "Something went wrong, try again later" };
-			}
-		}
-		public Game GetGame(Guid guid)
-		{
-			return GuidGamePairs.GetValueOrDefault(guid)!;
-		}
-		public bool RegisterPlayerConnectionId(Guid guid, string name, string connectionId)
-		{
-			if (!GuidGamePairs.TryGetValue(guid, out var game))
-			{
-				throw new Exception("Not valid guid");
-			}
-			var player = game.PlayerList.FirstOrDefault(x => x.Name == name) ?? throw new Exception("Not valid playername");
 			player.connectionID = connectionId;
 
 			if (game.PlayerList.All(p => p.connectionID is not null) && !game.AlreadyInitialized)
 			{
 				game.AlreadyInitialized = true;
-				return true;
+				return GameServiceResponses.GameCanStart;
 			}
-			return false;
+			return GameServiceResponses.GameCantStart;
 		}
-		public ApiDTO<int[]> RollDices(Guid guid)
+		public int[]? RollDices(Guid guid)
 		{
 			var dices = new int[2];
-			var game = GuidGamePairs.GetValueOrDefault(guid);
+			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
-				return new ApiDTO<int[]>() { Success = false, Value = null };
+				return null;
 			}
 			int sum = 0;
 			for (int i = 0; i < dices.Length; i++)
@@ -163,17 +78,14 @@ namespace BLL.Implementations
 			{
 				game.RobberNeedsMove = true;
 				//game.ResolveResourceCount = true;
+				game.PlayersWithSevenOrMoreResources.Clear();
 				foreach (var player in game.PlayerList)
 				{
-					if (CountResources(player.ResourcesInventory) >= 7)
+					if (player.ResourcesInventory.Values.Sum() >= 7)
 					{
-						if (game.PlayersWithSevenOrMore.FirstOrDefault(p => p.Name == player.Name) is null)
-						{
-							game.PlayersWithSevenOrMore.Add(player);
-						}
+						game.PlayersWithSevenOrMoreResources.Add(player);
 					}
 				}
-				return new ApiDTO<int[]>() { Success = true, Value = dices };
 			}
 			else
 			{
@@ -213,83 +125,69 @@ namespace BLL.Implementations
 					}
 				}
 			}
-			return new ApiDTO<int[]>() { Success = true, Value = dices };
+			return dices;
 		}
-		private int CountResources(Dictionary<Resources, int> inventory)
+		public List<string>? GetPlayersConnectionIdWithSevenOrMoreResources(Guid guid)
 		{
-			int count = 0;
-			//inventory.Values.Count;
-			count += inventory[Resources.Brick];
-			count += inventory[Resources.Ore];
-			count += inventory[Resources.Sheep];
-			count += inventory[Resources.Wheat];
-			count += inventory[Resources.Wood];
-			return count;
-		}
-		public ApiDTO<string[]> GetPlayersConnectionIdWithSevenOrMoreResources(Guid guid)
-		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				return new ApiDTO<string[]>() { Success = false, Value = null };
-			}
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return null;
+            }
 			List<string> res = new List<string>();
-			foreach (var player in game.PlayerList)
+			foreach (var player in game.PlayersWithSevenOrMoreResources)
 			{
-				if (CountResources(player.ResourcesInventory) >= 7)
-				{
-					res.Add(player.connectionID!);
-				}
+				res.Add(player.connectionID!);
 			}
-			return new ApiDTO<string[]>() { Success = true, Value = res.ToArray() };
+			return res;
 		}
-		public string GetActivePlayerConnectionId(Guid guid)
+		public string? GetActivePlayerConnectionId(Guid guid)
 		{
-			var game = GuidGamePairs[guid];
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return null;
+            }
+            return game.ActivePlayer.connectionID;
+		}
+		public string? GetActivePlayerName(Guid guid)
+		{
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return null;
+            }
+            return game.ActivePlayer.Name;
+		}
+		public GameServiceResponses StartGame(Guid guid)
+		{
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return GameServiceResponses.InvalidGame;
+            }
+            game.InitialRound = true;
+			game.InitialRoundCount = game.PlayerList.Count * 2;
+			game.ActivePlayer = game.PlayerList[new Random().Next(1, game.PlayerList.Count)];
+			return GameServiceResponses.Success;
+		}
+		public GameServiceResponses IsInitialRound(Guid guid)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
-				return null!;
+				return GameServiceResponses.InvalidGame;
 			}
-			return game.ActivePlayer.connectionID!;
+			return game.InitialRound? GameServiceResponses.InitialRound: GameServiceResponses.NotInitialRound;
 		}
-		public Player GetActivePlayer(Guid guid)
+		public GameServiceResponses NextTurn(Guid guid)
 		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				return null!;
-			}
-			return game.ActivePlayer;
-		}
-		public void StartGame(Guid guid)
-		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				throw new Exception("Not valid guid");
-			}
-			GuidGamePairs[guid].InitialRound = true;
-			GuidGamePairs[guid].InitialRoundCount = game.PlayerList.Count * 2;
-			GuidGamePairs[guid].ActivePlayer = game.PlayerList[new Random().Next(1, game.PlayerList.Count)];
-		}
-		public bool IsInitialRound(Guid guid)
-		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				throw new Exception("Not valid guid");
-			}
-			return game.InitialRound;
-		}
-		public void NextTurn(Guid guid)
-		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				throw new Exception("Not valid guid");
-			}
-			int index = game.PlayerList.IndexOf(game.ActivePlayer);
-			game.ActivePlayer = game.PlayerList[(index + 1) % game.PlayerList.Count];
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return GameServiceResponses.InvalidGame;
+            }
+			game.ActivePlayer = game.PlayerList[(game.PlayerList.IndexOf(game.ActivePlayer) + 1) % game.PlayerList.Count];
 			if (game.InitialRound)
 			{
 				game.InitialRoundCount--;
@@ -335,27 +233,28 @@ namespace BLL.Implementations
 					game.ActivePlayerCanPlaceInitialRoad = true;
 				}
 			}
+			return GameServiceResponses.Success;
 		}
-		public void ClaimInitialCorner(Guid guid, int id, string name)
+		public GameServiceResponses ClaimInitialCorner(Guid guid, int id, string name)
 		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return GameServiceResponses.InvalidGame;
+            }
+            if (game.ActivePlayer.Name != name)
 			{
-				throw new Exception("Not valid guid");
-			}
-			if (game.ActivePlayer.Name != name)
-			{
-				throw new Exception("Not valid username");
-			}
+				return GameServiceResponses.InvalidMember;
+            }
 			var corner = game.GameMap.CornerList.FirstOrDefault(corner => corner.Id == id);
 			if (corner is null)
 			{
-				throw new Exception("Not valid Corner ID");
+				return GameServiceResponses.InvalidCorner;
 			}
 			if (corner.Level != 0)
 			{
-				throw new Exception("You can't take that corner");
-			}
+                return GameServiceResponses.CornerAlreadyTaken;
+            }
 			game.ActivePlayerCanPlaceInitialVillage = false;
 			corner.Player = game.ActivePlayer;
 			corner.Level = 1;
@@ -372,280 +271,248 @@ namespace BLL.Implementations
 					edge.corners[0].Level = -1;
 				}
 			}
+			return GameServiceResponses.Success;
 		}
-		public void ClaimInitialRoad(Guid guid, int id, string name)
+		public GameServiceResponses ClaimInitialRoad(Guid guid, int id, string name)
 		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return GameServiceResponses.InvalidGame;
+            }
+            if (game.ActivePlayer.Name != name)
 			{
-				throw new Exception("Not valid guid");
-			}
-			if (game.ActivePlayer.Name != name)
-			{
-				throw new Exception("Not valid username");
-			}
+                return GameServiceResponses.InvalidMember;
+            }
 			var edge = game.GameMap.EdgeList.FirstOrDefault(edge => edge.Id == id);
 			if (edge is null)
 			{
-				throw new Exception("Not valid edge ID");
-			}
+                return GameServiceResponses.InvalidEdge;
+            }
 			if (edge.Owner.Name is not null)
 			{
-				throw new Exception("Edge is already taken");
-			}
+				return GameServiceResponses.EdgeAlreadyTaken;
+            }
 			if (edge.corners[0].Id != game.lastInitialVillageId && edge.corners[1].Id != game.lastInitialVillageId)
 			{
-				throw new Exception("You must place your road next to your village");
-			}
+                return GameServiceResponses.InitialRoadNotPlacedCorrectly;
+            }
 			game.ActivePlayerCanPlaceInitialRoad = false;
 			edge.Owner = game.ActivePlayer;
+			return GameServiceResponses.Success;
 		}
-		public Dictionary<Resources, int> GetPlayersInventory(Guid guid, string name)
+        public GameServiceResponses ClaimCorner(Guid guid, int id, string name)
+        {
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return GameServiceResponses.InvalidGame;
+            }
+            if (game.ActivePlayer.Name != name)
+            {
+                return GameServiceResponses.InvalidMember;
+            }
+            if (game.ResolveResourceCount || game.RobberNeedsMove)
+            {
+                return GameServiceResponses.CantPlaceCornerAtTheMoment;
+            }
+            var corner = game.GameMap.CornerList.FirstOrDefault(corner => corner.Id == id);
+            if (corner is null)
+            {
+                return GameServiceResponses.InvalidCorner;
+            }
+            var inventory = game.ActivePlayer.ResourcesInventory;
+            if (corner.Player.Name == name && corner.Level == 1)
+            {
+                if (inventory[Resources.Ore] < 3 || inventory[Resources.Wheat] < 2)
+                {
+					return GameServiceResponses.NotEnoughResourcesForUpgrade;
+                }
+                else
+                {
+                    inventory[Resources.Ore] -= 3;
+                    inventory[Resources.Wheat] -= 2;
+                    corner.Level = 2;
+                    game.ActivePlayer.Points++;
+                    if (game.ActivePlayer.Points >= 10)
+                    {
+                        game.GameOver = true;
+                        game.Winner = new Player { Name = game.ActivePlayer.Name };
+						return GameServiceResponses.GameOver;
+                    }
+                }
+            }
+            if (corner.Level != 0)
+            {
+				return GameServiceResponses.CornerAlreadyTaken;
+            }
+            if (!corner.Edges.Any(e => e.Owner.Name == name))
+            {
+				return GameServiceResponses.CantPlaceCornerWithoutPath;
+            }
+            if (inventory[Resources.Wood] <= 0 || inventory[Resources.Wheat] <= 0 || inventory[Resources.Sheep] <= 0 || inventory[Resources.Brick] <= 0)
+            {
+				return GameServiceResponses.NotEnoughResourcesForVillage;
+            }
+            inventory[Resources.Wood] -= 1;
+            inventory[Resources.Wheat] -= 1;
+            inventory[Resources.Sheep] -= 1;
+            inventory[Resources.Brick] -= 1;
+            corner.Player = game.ActivePlayer;
+            corner.Level = 1;
+            game.ActivePlayer.Points++;
+            if (game.ActivePlayer.Points >= 10)
+            {
+                game.GameOver = true;
+                game.Winner = new Player { Name = game.ActivePlayer.Name };
+            }
+            foreach (var edge in corner.Edges)
+            {
+                if (corner == edge.corners[0])
+                {
+                    edge.corners[1].Level = -1;
+                }
+                else
+                {
+                    edge.corners[0].Level = -1;
+                }
+            }
+			return GameServiceResponses.Success;
+        }
+        public GameServiceResponses ClaimEdge(Guid guid, int id, string name)
+        {
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return GameServiceResponses.InvalidGame;
+            }
+            if (game.ActivePlayer.Name != name)
+            {
+				return GameServiceResponses.InvalidMember;
+            }
+            if (game.ResolveResourceCount || game.RobberNeedsMove)
+            {
+                return GameServiceResponses.CantPlaceEdgeAtTheMoment;
+            }
+            var edge = game.GameMap.EdgeList.FirstOrDefault(edge => edge.Id == id);
+            if (edge is null)
+            {
+                return GameServiceResponses.InvalidEdge;
+            }
+            var inventory = game.ActivePlayer.ResourcesInventory;
+            if (inventory[Resources.Wood] <= 0 || inventory[Resources.Brick] <= 0)
+            {
+				return GameServiceResponses.NotEnoughResourcesForRoad;
+            }
+            if (edge.Owner.Name is not null)
+            {
+				return GameServiceResponses.EdgeAlreadyTaken;
+            }
+            if (edge.corners[0].Player.Name != name && edge.corners[1].Player.Name != name)
+            {
+                var corner1 = edge.corners[0];
+                var corner2 = edge.corners[1];
+                if (!corner1.Edges.Any(e => e.Owner.Name == name) && !corner2.Edges.Any(e => e.Owner.Name == name))
+                {
+					return GameServiceResponses.CantPlaceCornerWithoutPath;
+                }
+            }
+            game.ActivePlayerCanPlaceInitialRoad = false;
+            edge.Owner = game.ActivePlayer;
+            inventory[Resources.Wood] -= 1;
+            inventory[Resources.Brick] -= 1;
+			return GameServiceResponses.Success;
+        }
+        public Dictionary<Resources, int>? GetPlayersInventory(Guid guid, string name)
 		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				throw new Exception("Not valid guid");
-			}
-			var player = game.PlayerList.Find(p => p.Name == name);
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+				return null;
+            }
+            var player = game.PlayerList.Find(p => p.Name == name);
 			if (player is null)
 			{
-				throw new Exception("Not valid username");
+				return null;
 			}
 			return player.ResourcesInventory;
 		}
-		public Dictionary<string, int> GetOtherPlayersInventory(Guid guid, string name)
+		public Dictionary<string, int>? GetOtherPlayersInventory(Guid guid, string name)
 		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				throw new Exception("Not valid guid");
-			}
-			Dictionary<string, int> res = new Dictionary<string, int>();
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return null;
+            }
+            Dictionary<string, int> res = new Dictionary<string, int>();
 			foreach (var player in game.PlayerList)
 			{
 				if (player.Name != name)
 				{
-					var number = CountResources(player.ResourcesInventory);
-					res.Add(player.Name!, number);
+					var number = player.ResourcesInventory.Values.Sum();
+                    res.Add(player.Name, number);
 				}
 			}
 			return res;
 		}
-
-		public void ClaimCorner(Guid guid, int id, string name)
+		public GameServiceResponses IsGameOver(Guid guid)
 		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				throw new Exception("Not valid guid");
-			}
-			if (game.ActivePlayer.Name != name)
-			{
-				throw new Exception("You're not the current player");
-			}
-			if (game.ResolveResourceCount)
-			{
-				throw new Exception("You must resolve the resources first");
-			}
-			if (game.RobberNeedsMove)
-			{
-				throw new Exception("You must move the robber first");
-			}
-			var corner = game.GameMap.CornerList.FirstOrDefault(corner => corner.Id == id);
-			if (corner is null)
-			{
-				throw new Exception("Not valid Corner ID");
-			}
-			var inventory = game.ActivePlayer.ResourcesInventory;
-			if (corner.Player.Name == name && corner.Level == 1)
-			{
-				if (inventory[Resources.Ore] < 3 || inventory[Resources.Wheat] < 2)
-				{
-					throw new Exception("Insufficient resources to upgrade village");
-				}
-				else
-				{
-					inventory[Resources.Ore] -= 3;
-					inventory[Resources.Wheat] -= 2;
-					corner.Level = 2;
-					game.ActivePlayer.Points++;
-					if (game.ActivePlayer.Points >= 10)
-					{
-						game.GameOver = true;
-						game.Winner = new Player { Name = game.ActivePlayer.Name };
-					}
-				}
-				return;
-			}
-			if (corner.Level != 0)
-			{
-				throw new Exception("You can't take that corner");
-			}
-			if (!corner.Edges.Any(e => e.Owner.Name == name))
-			{
-				throw new Exception("You must have a road to the village");
-			}
-			if (inventory[Resources.Wood] <= 0 || inventory[Resources.Wheat] <= 0 || inventory[Resources.Sheep] <= 0 || inventory[Resources.Brick] <= 0)
-			{
-				throw new Exception("Insufficient resources to build village");
-			}
-			inventory[Resources.Wood] -= 1;
-			inventory[Resources.Wheat] -= 1;
-			inventory[Resources.Sheep] -= 1;
-			inventory[Resources.Brick] -= 1;
-			corner.Player = game.ActivePlayer;
-			corner.Level = 1;
-			game.ActivePlayer.Points++;
-			if (game.ActivePlayer.Points >= 10)
-			{
-				game.GameOver = true;
-				game.Winner = new Player { Name = game.ActivePlayer.Name };
-			}
-			foreach (var edge in corner.Edges)
-			{
-				if (corner == edge.corners[0])
-				{
-					edge.corners[1].Level = -1;
-				}
-				else
-				{
-					edge.corners[0].Level = -1;
-				}
-			}
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+				return GameServiceResponses.InvalidGame;
+            }
+			return GameServiceResponses.GameOver;
 		}
-
-		public void ClaimEdge(Guid guid, int id, string name)
+		public List<Player>? GetPlayers(Guid guid)
 		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				throw new Exception("Not valid guid");
-			}
-			if (game.ActivePlayer.Name != name)
-			{
-				throw new Exception("You're not the current player");
-			}
-			if (game.ResolveResourceCount)
-			{
-				throw new Exception("You must resolve the resources first");
-			}
-			if (game.RobberNeedsMove)
-			{
-				throw new Exception("You must move the robber first");
-			}
-			var inventory = game.ActivePlayer.ResourcesInventory;
-			if (inventory[Resources.Wood] <= 0 || inventory[Resources.Brick] <= 0)
-			{
-				throw new Exception("Insufficient resouces to build road");
-			}
-			var edge = game.GameMap.EdgeList.FirstOrDefault(edge => edge.Id == id);
-			if (edge is null)
-			{
-				throw new Exception("Not valid edge ID");
-			}
-
-			if (edge.Owner.Name is not null)
-			{
-				throw new Exception("Edge is already taken");
-			}
-			if (edge.corners[0].Player.Name != name && edge.corners[1].Player.Name != name)
-			{
-				var corner1 = edge.corners[0];
-				var corner2 = edge.corners[1];
-				if (!corner1.Edges.Any(e => e.Owner.Name == name) && !corner2.Edges.Any(e => e.Owner.Name == name))
-				{
-					throw new Exception("You must place your road next to your village, or road");
-				}
-			}
-			game.ActivePlayerCanPlaceInitialRoad = false;
-			edge.Owner = game.ActivePlayer;
-			inventory[Resources.Wood] -= 1;
-			inventory[Resources.Brick] -= 1;
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return null;
+            }
+			return game.PlayerList;
 		}
-
-		public bool IsGameOver(Guid guid)
+		public GameServiceResponses MoveRobber(Guid guid, int id, string name)
 		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
+            var game = _inMemoryDatabaseGame.GetGame(guid);
+            if (game is null)
+            {
+                return GameServiceResponses.InvalidGame;
+            }
+            if (game.ActivePlayer.Name != name)
 			{
-				throw new Exception("Not valid guid");
-			}
-			return game.GameOver;
-		}
-
-		public List<Player> GetPlayers(Guid guid)
-		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				throw new Exception("Not valid guid");
-			}
-			var res = new List<Player>();
-			foreach (var player in game.PlayerList)
-			{
-				res.Add(new Player() { Name = player.Name, Color = player.Color, Points = player.Points });
-			}
-			return res;
-		}
-
-		public void MoveRobber(Guid guid, int id, string name)
-		{
-			var game = GuidGamePairs[guid];
-			if (game is null)
-			{
-				throw new Exception("Not valid guid");
-			}
-			if (game.ActivePlayer.Name != name)
-			{
-				throw new Exception("Not valid username");
-			}
+                return GameServiceResponses.InvalidMember;
+            }
 			var newRobbedField = game.GameMap.FieldList.FirstOrDefault(f => f.Id == id);
 			if (newRobbedField is null)
 			{
-				throw new Exception("Not valid field ID");
+				return GameServiceResponses.InvalidField;
 			}
 			var currentlyRobbedfield = game.GameMap.FieldList.FirstOrDefault(f => f.IsRobbed == true);
 			if (currentlyRobbedfield is null)
 			{
-				throw new Exception("Where's the robber?");
-			}
+				return GameServiceResponses.SomeHowTheRobberIsMissing;
+            }
 			currentlyRobbedfield.IsRobbed = false;
 			newRobbedField.IsRobbed = true;
 			var corner = newRobbedField.Corners.FirstOrDefault(c => c.Level > 0 && c.Player.Name != game.ActivePlayer.Name);
 			if (corner is not null)
 			{
-				var rand = new Random().Next(0, 5);
-				Resources stolenResource;
 				var player = game.PlayerList.First(c => c.Name == corner.Player.Name);
-				if (player.ResourcesInventory[Resources.Wood] > 0)
+				if (player.ResourcesInventory.Values.Sum() > 0)
 				{
-					stolenResource = Resources.Wood;
+					Resources stolenResource = (Resources)new Random().Next(0, 5);
+					while (player.ResourcesInventory[stolenResource] <= 0)
+					{
+						stolenResource = (Resources)new Random().Next(0, 5);
+					}
+					player.ResourcesInventory[stolenResource]--;
+					game.ActivePlayer.ResourcesInventory[stolenResource]++;
 				}
-				else if (player.ResourcesInventory[Resources.Wheat] > 0)
-				{
-					stolenResource = Resources.Wheat;
-				}
-				else if (player.ResourcesInventory[Resources.Sheep] > 0)
-				{
-					stolenResource = Resources.Sheep;
-				}
-				else if (player.ResourcesInventory[Resources.Ore] > 0)
-				{
-					stolenResource = Resources.Ore;
-				}
-				else if (player.ResourcesInventory[Resources.Brick] > 0)
-				{
-					stolenResource = Resources.Brick;
-				}
-				else
-				{
-					return;
-				}
-				player.ResourcesInventory[stolenResource]--;
-				game.ActivePlayer.ResourcesInventory[stolenResource]++;
 			}
 			game.RobberNeedsMove = false;
+			return GameServiceResponses.Success;
 		}
 	}
 }
