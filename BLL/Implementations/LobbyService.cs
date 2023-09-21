@@ -20,7 +20,7 @@ namespace BLL.Implementations
 			_gameService = gameService;
 			_inMemoryDatabaseLobby = inMemoryDatabaseLobby;
 		}
-		public InMemoryDatabaseLobbyResponses createLobby(string name)
+		public InMemoryDatabaseLobbyResponses CreateLobby(string name)
 		{
             var guid = Guid.NewGuid();
             var lobby = new Lobby

@@ -30,7 +30,7 @@ namespace Catan.Server.Controllers
 			{
 				throw new Exception("Using other player's name");
 			}
-			var lobby= _lobbyService.createLobby(playerLobbyDTO.Lobby!.Name!);
+			var lobby= _lobbyService.CreateLobby(playerLobbyDTO.Lobby!.Name!);
             return new ApiDTO<InMemoryDatabaseLobbyResponses>() { Success = lobby == InMemoryDatabaseLobbyResponses.Success, Value = lobby }; //TODO kezelni kliensoldalon
         }
 
@@ -48,8 +48,8 @@ namespace Catan.Server.Controllers
 			{
 				throw new Exception("Using other player's name");
 			}
-            Player player = new Player { Name = playerLobbyDTO.Actor!.Name };
-			var response=_lobbyService.AddPlayerToLobby(player, playerLobbyDTO.Lobby!.GuID);
+            Player player = new Player { Name = playerLobbyDTO.Actor.Name };
+			var response=_lobbyService.AddPlayerToLobby(player, playerLobbyDTO.Lobby.GuID);
 			return new ApiDTO<InMemoryDatabaseLobbyResponses> { Success = response==InMemoryDatabaseLobbyResponses.Success, Value = response }; //TODO kezelni kliens oldalon
         }
 

@@ -45,7 +45,7 @@ namespace BLL.Implementations
 
 		public async Task<ApiDTO<string>> LoginUser(LoginDTO loginDTO)
 		{
-			var user = await _userManager.FindByNameAsync(loginDTO.Username);
+			/*var user = await _userManager.FindByNameAsync(loginDTO.Username);
 			if (user is null)
 			{
 				return new ApiDTO<string>() { Success = false, Value = "User not found!" };
@@ -53,7 +53,7 @@ namespace BLL.Implementations
 			if (!await _userManager.CheckPasswordAsync(user, loginDTO.Password))
 			{
 				return new ApiDTO<string>() { Success = false, Value = "Incorrect password!" };
-			}
+			}*/
 			var token = new JwtSecurityToken(
 				issuer: _configuration["JWT:ValidIssuer"],
 				audience: _configuration["JWT:ValidAudience"],

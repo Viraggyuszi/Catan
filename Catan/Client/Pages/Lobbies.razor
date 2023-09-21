@@ -50,8 +50,8 @@ else
 										</div>
 										<div class="card-footer bg-transparent">
 											<div class="d-flex justify-content-evenly">
-												<button class="btn btn-secondary btn-sm" disabled="@(!CanJoinToGame())" @onclick="()=>JoinLobby(lobby)">Join Lobby</button>
-												<button class="btn btn-secondary btn-sm" disabled="@(!CanLeaveLobby(lobby))" @onclick="()=>LeaveLobby(lobby)">Leave Lobby</button>
+												<button class="btn btn-secondary btn-sm" disabled="@(!CanJoinToGame())" @onclick="async ()=>await JoinLobby(lobby)">Join Lobby</button>
+												<button class="btn btn-secondary btn-sm" disabled="@(!CanLeaveLobby(lobby))" @onclick="async ()=>await LeaveLobby(lobby)">Leave Lobby</button>
 												<button class="btn btn-secondary btn-sm" disabled="@(!CanStartGame(lobby))" @onclick="()=>StartLobby(lobby)">Start Game</button>
 											</div>
 										</div>
@@ -125,8 +125,9 @@ else
 
 		await NotificationHubConnection.InvokeAsync("JoinGroup", "default");
 
-		actor.Name = await JS.InvokeAsync<string>("localStorage.getItem", "userName");
-		actor.Token = await JS.InvokeAsync<string>("localStorage.getItem", "loginToken");
+		var name = await JS.InvokeAsync<string>("localStorage.getItem", "userName");
+		var token = await JS.InvokeAsync<string>("localStorage.getItem", "loginToken");
+		actor = new Actor(name, token);
 		Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", actor.Token);
 
 		NotificationHubConnection.On("RefreshLobbiesList", async () =>
@@ -141,7 +142,7 @@ else
 
 		await GetAllLobby();
 
-		
+
 
 	}
 
@@ -163,19 +164,19 @@ else
 		await NotificationHubConnection!.InvokeAsync("LobbiesChanged");
 	}
 
-	private async void CreateNewLobby()
+	private async Task CreateNewLobby()
 	{
 		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = actor, Lobby = new Lobby { Name = NewLobbyName } };
 		var response = await Http.PostAsJsonAsync("api/lobby/create", playerLobbyDTO);
-		var lobby = await response.Content.ReadFromJsonAsync<ApiDTO<Lobby>>();
-		if (lobby!.Success)
+		var lobby = await response.Content.ReadFromJsonAsync<ApiDTO<InMemoryDatabaseLobbyResponses>>();
+		if (lobby is not null && lobby.Success)
 		{
-			lobbies.Add(lobby!.Value!);
-			lobbyCreating = false;
+			await GetAllLobby();
+			//await JoinLobby(lobbies.First(l=>l.Name==NewLobbyName));
 			NewLobbyName = "";
-			JoinLobby(lobby.Value!);
-			StateHasChanged();
+			lobbyCreating = false;
 			await NotifyOthers();
+			StateHasChanged();
 		}
 	}
 
@@ -186,16 +187,16 @@ else
 		StateHasChanged();
 	}
 
-	private async void JoinLobby(Lobby lobby)
+	private async Task JoinLobby(Lobby lobby)
 	{
 		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = actor, Lobby = lobby };
 		var response = await Http.PostAsJsonAsync<PlayerLobbyDTO>("api/lobby/join", playerLobbyDTO);
-		var message = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
-		if (message!.Success)
+		var message = await response.Content.ReadFromJsonAsync<ApiDTO<InMemoryDatabaseLobbyResponses>>();
+		if (message is not null && message.Success)
 		{
 			await NotifyOthers();
-			await ChatComponent!.ChangeSignalRGroup(message.Value!);
-			await NotificationHubConnection!.InvokeAsync("JoinGroup", message.Value);
+			await ChatComponent!.ChangeSignalRGroup(lobby.GuID.ToString());
+			await NotificationHubConnection!.InvokeAsync("JoinGroup", lobby.GuID.ToString());
 		}
 		else
 		{
@@ -203,16 +204,16 @@ else
 		}
 	}
 
-	private async void LeaveLobby(Lobby lobby)
+	private async Task LeaveLobby(Lobby lobby)
 	{
 		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = actor, Lobby = lobby };
 		var response = await Http.PostAsJsonAsync<PlayerLobbyDTO>("api/lobby/leave", playerLobbyDTO);
-		var message = await response.Content.ReadFromJsonAsync<ApiDTO<string>>();
+		var message = await response.Content.ReadFromJsonAsync<ApiDTO<InMemoryDatabaseLobbyResponses>>();
 		if (message!.Success)
 		{
 			await NotifyOthers();
 			await ChatComponent!.ChangeSignalRGroup("default");
-			await NotificationHubConnection!.InvokeAsync("LeaveGroup", message.Value);
+			await NotificationHubConnection!.InvokeAsync("LeaveGroup", lobby.GuID.ToString());
 		}
 		else
 		{
