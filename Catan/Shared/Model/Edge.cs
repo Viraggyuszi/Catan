@@ -10,7 +10,7 @@ namespace Catan.Shared.Model
 	public class Edge
 	{
 		public int Id { get; set; }
-		public GamePlayer Owner { get; set; } = new GamePlayer();
+		public Player Owner { get; set; } = new Player();
 		
 		public Corner[] corners { get; set; } = new Corner[2];
 

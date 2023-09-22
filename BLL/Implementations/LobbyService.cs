@@ -1,6 +1,7 @@
 ﻿using BLL.Interfaces;
 using Catan.Shared.Model;
 using Catan.Shared.Request;
+using Catan.Shared.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,38 +14,51 @@ namespace BLL.Implementations
 	public class LobbyService : ILobbyService
 	{
 		private readonly IGameService _gameService;
-		private readonly IMapService _mapService;
-		public LobbyService(IGameService gameService, IMapService mapService)
+		private readonly IInMemoryDatabaseLobby _inMemoryDatabaseLobby;
+		public LobbyService(IGameService gameService, IInMemoryDatabaseLobby inMemoryDatabaseLobby )
 		{
 			_gameService = gameService;
-			_mapService = mapService;
+			_inMemoryDatabaseLobby = inMemoryDatabaseLobby;
 		}
-		public Lobby createLobby(string name)
+		public InMemoryDatabaseLobbyResponses CreateLobby(string name)
 		{
-			var lobby = _gameService.CreateLobby(name);
-			return lobby;
-		}
+            var guid = Guid.NewGuid();
+            var lobby = new Lobby
+            {
+                Name = name,
+                Players = new List<Player>(),
+                GuID = guid
+            };
+            return _inMemoryDatabaseLobby.AddLobby(guid, lobby);
+        }
 
-		public ApiDTO<string> addPlayerToLobby(Player player, Guid guid)
+		public InMemoryDatabaseLobbyResponses AddPlayerToLobby(Player player, Guid guid)
 		{
-			var ret = _gameService.AddPlayerToLobby(player, guid);
-			return ret;
-		}
+            return _inMemoryDatabaseLobby.AddPlayerToLobby(player, guid);
+        }
 
-		public ApiDTO<string> removePlayerFromLobby(Player player, Guid guid)
+		public InMemoryDatabaseLobbyResponses RemovePlayerFromLobby(Player player, Guid guid)
 		{
-			var ret = _gameService.RemovePlayerFromLobby(player, guid);
-			return ret;
-		}
+			return _inMemoryDatabaseLobby.RemovePlayerFromLobby(player, guid);
+        }
 
-		public ApiDTO<string> StartLobbyGame(Guid guid)
+		public InMemoryDatabaseGameResponses StartLobbyGame(Guid guid)
 		{
-			var NewGameMap = _mapService.GenerateMap();
-			return _gameService.RegisterGame(guid, NewGameMap);
+			var game =_inMemoryDatabaseLobby.CreateGame(guid);
+			if (game is null)
+			{
+				return InMemoryDatabaseGameResponses.CreateGameFailed;
+			}
+			var response = _gameService.RegisterGame(guid, game);
+			if (response==InMemoryDatabaseGameResponses.Success)
+			{
+				_inMemoryDatabaseLobby.RemoveLobby(guid);
+			}
+			return response;
 		}
-		public List<Lobby> GetAllLobby()
+		public List<Lobby> GetAllLobbies()
 		{
-			return _gameService.GetLobbies();
-		}
+            return _inMemoryDatabaseLobby.GetLobbies();
+        }
 	}
 }
