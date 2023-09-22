@@ -45,6 +45,7 @@ namespace Catan.Shared.Response
         NotEnoughResourcesForUpgrade,
         CantPlaceCornerWithoutPath,
         SomeHowTheRobberIsMissing,
-        GameOver
+        GameOver,
+        GameInProgress
     }
 }

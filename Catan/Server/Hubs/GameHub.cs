@@ -169,7 +169,7 @@ namespace Catan.Server.Hubs
 				throw new Exception("Using other player's name");
 			}
 			Guid guid= Guid.Parse(guidstring);
-			if (_gameService.IsInitialRound(guid)==GameServiceResponses.InitialRound)
+			if (_gameService.IsInitialRound(guid)==GameServiceResponses.NotInitialRound)
 			{
 				throw new Exception("It's not starting round");
 			}
@@ -200,7 +200,7 @@ namespace Catan.Server.Hubs
 				throw new Exception("Using other player's name");
 			}
 			Guid guid= Guid.Parse(guidstring);
-			if (_gameService.IsInitialRound(guid) == GameServiceResponses.InitialRound)
+			if (_gameService.IsInitialRound(guid) == GameServiceResponses.NotInitialRound)
 			{
 				throw new Exception("It's not starting round");
 			}
