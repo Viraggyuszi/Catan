@@ -9,12 +9,12 @@ namespace Catan.Shared.Model
 {
 	public class Game
 	{
-		public List<GamePlayer> PlayerList { get; set; } = new List<GamePlayer>();
+		public List<Player> PlayerList { get; set; } = new List<Player>();
 		public Map GameMap { get; set; } = new Map();
-		public GamePlayer ActivePlayer { get; set; } = new GamePlayer();
+		public Player ActivePlayer { get; set; } = new Player();
 		public bool RobberNeedsMove = false;
 		public bool ResolveResourceCount = false;
-		public List<Player> PlayersWithSevenOrMore { get; set; } = new List<Player>();
+		public List<Player> PlayersWithSevenOrMoreResources { get; set; } = new List<Player>();
 		
 		public bool InitialRound = false;
 		public int InitialRoundCount = 0;

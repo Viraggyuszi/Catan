@@ -298,7 +298,7 @@
 
 	private Map? map;
 
-	private Actor actor = new Actor();
+	private Actor? actor;
 
 	private Dictionary<Resources, int> inventory = new Dictionary<Resources, int>
 		{
@@ -347,7 +347,7 @@
 		string name = await JS.InvokeAsync<string>("localStorage.getItem", "userName");
 		Guid = await JS.InvokeAsync<string>("localStorage.getItem", "GameGuid");
 		string token = await JS.InvokeAsync<string>("localStorage.getItem", "loginToken");
-		actor = new Actor { Name = name, Token = token };
+		actor = new Actor(name,token);
 		hubConnection = new HubConnectionBuilder()
 			.WithUrl(Navigation.ToAbsoluteUri("/gamehub"), options =>
 			{

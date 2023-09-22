@@ -9,9 +9,11 @@ namespace BLL
 		public static void ConfigureServices(IServiceCollection services)
 		{
 			services.AddScoped<DatabaseService>();
-			services.AddSingleton<IGameService, GameService>();
+			services.AddScoped<IGameService, GameService>();
 			services.AddScoped<IMapService, MapService>();
 			services.AddScoped<ILobbyService, LobbyService>();
+			services.AddSingleton<IInMemoryDatabaseLobby, InMemoryDatabaseLobby>();
+			services.AddSingleton<IInMemoryDatabaseGame, InMemoryDatabaseGame>();
 		}
 	}
 }

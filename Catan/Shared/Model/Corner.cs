@@ -11,7 +11,7 @@ namespace Catan.Shared.Model
 	public class Corner
 	{
 		public int Id { get; set; }
-		public GamePlayer Player { get; set; }
+		public Player Player { get; set; }
 		public int Level { get; set; }		
 		public List<Field> Fields { get; set; }		
 		public List<Edge> Edges { get; set; }
@@ -19,7 +19,7 @@ namespace Catan.Shared.Model
 		{
 			Fields = new List<Field>();
 			Edges = new List<Edge>();
-			Player = new GamePlayer();
+			Player = new Player();
 		}
 
 		public override string ToString()
