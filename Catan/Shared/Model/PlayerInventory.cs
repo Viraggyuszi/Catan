@@ -17,10 +17,7 @@ namespace Catan.Shared.Model
         {
             return inventory;
         }
-        public int GetCount()
-        {
-            return inventory.Values.Sum();
-        }
+        
 		public bool HasEnoughForUpgrade()
 		{
 			return inventory[Resources.Ore]>=3 && inventory[Resources.Wheat]>=2;
@@ -62,6 +59,31 @@ namespace Catan.Shared.Model
 			}
 			int rnd = new Random().Next(0, list.Count());
 			return list[rnd];
+		}
+		public bool HasEnoughResourcesForTradeOffer(Inventory _inventory)
+		{
+			if (_inventory.GetResourceCount(Resources.Wood) > inventory[Resources.Wood]) return false;
+			if (_inventory.GetResourceCount(Resources.Brick) > inventory[Resources.Brick]) return false;
+			if (_inventory.GetResourceCount(Resources.Ore) > inventory[Resources.Ore]) return false;
+			if (_inventory.GetResourceCount(Resources.Sheep) > inventory[Resources.Wheat]) return false;
+			if (_inventory.GetResourceCount(Resources.Wheat) > inventory[Resources.Wheat]) return false;
+			return true;
+		}
+		public void AddResources(Inventory _inventory)
+		{
+			inventory[Resources.Wood] += _inventory.GetResourceCount(Resources.Wood);
+			inventory[Resources.Brick] += _inventory.GetResourceCount(Resources.Brick);
+			inventory[Resources.Ore] += _inventory.GetResourceCount(Resources.Ore);
+			inventory[Resources.Sheep] += _inventory.GetResourceCount(Resources.Sheep);
+			inventory[Resources.Wheat] += _inventory.GetResourceCount(Resources.Wheat);
+		}
+		public void RemoveResources(Inventory _inventory)
+		{
+			inventory[Resources.Wood] -= _inventory.GetResourceCount(Resources.Wood);
+			inventory[Resources.Brick] -= _inventory.GetResourceCount(Resources.Brick);
+			inventory[Resources.Ore] -= _inventory.GetResourceCount(Resources.Ore);
+			inventory[Resources.Sheep] -= _inventory.GetResourceCount(Resources.Sheep);
+			inventory[Resources.Wheat] -= _inventory.GetResourceCount(Resources.Wheat);
 		}
 	}
 }

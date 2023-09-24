@@ -81,7 +81,7 @@ namespace BLL.Implementations
 				game.PlayersWithSevenOrMoreResources.Clear();
 				foreach (var player in game.PlayerList)
 				{
-					if (player.Inventory.GetCount() >= 7)
+					if (player.Inventory.GetAllResourcesCount() >= 7)
 					{
 						game.PlayersWithSevenOrMoreResources.Add(player);
 					}
@@ -166,6 +166,7 @@ namespace BLL.Implementations
                 return GameServiceResponses.InvalidGame;
             }
 			game.ActivePlayer = game.PlayerList[(game.PlayerList.IndexOf(game.ActivePlayer) + 1) % game.PlayerList.Count];
+			game.TradeOfferList.Clear();
 			if (game.InitialRound)
 			{
 				game.InitialRoundCount--;
@@ -400,7 +401,7 @@ namespace BLL.Implementations
 			{
 				if (player.Name is not null && player.Name != name)
 				{
-					var number = player.Inventory.GetCount();
+					var number = player.Inventory.GetAllResourcesCount();
                     res.Add(player.Name, number);
 				}
 			}
@@ -451,7 +452,7 @@ namespace BLL.Implementations
 			if (corner is not null)
 			{
 				var player = game.PlayerList.First(c => c.Name == corner.Player.Name);
-				if (player.Inventory.GetCount() > 0)
+				if (player.Inventory.GetAllResourcesCount() > 0)
 				{
 					Resources stolenResource = player.Inventory.GetRandomResource();
 					player.Inventory.RemoveResource(stolenResource, 1);
@@ -460,6 +461,72 @@ namespace BLL.Implementations
 			}
 			game.RobberNeedsMove = false;
 			return GameServiceResponses.Success;
+		}
+		
+		
+		
+		public List<TradeOffer>? GetTradeOffers(Guid guid) 
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return null;
+			}
+			return game.TradeOfferList;
+		}
+		
+		public GameServiceResponses RegisterTradeOffer(Guid guid, TradeOffer offer)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			if (game.ActivePlayer.Name != offer.Owner.Name)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			if (game.TradeOfferList.Count<3)
+			{
+				if (game.ActivePlayer.Inventory.HasEnoughResourcesForTradeOffer(offer.OwnerOffer))
+				{
+					game.TradeOfferList.Add(offer);
+					return GameServiceResponses.Success;
+				}
+				else
+				{
+					return GameServiceResponses.NotEnoughResourcesToCreateTrade;
+				}
+			}
+			else
+			{
+				return GameServiceResponses.TradeListFull;
+			}
+		}
+
+		public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			if (offer.Owner.Name==name)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			var player=game.PlayerList.First(p=>p.Name==name);
+			if (player.Inventory.HasEnoughResourcesForTradeOffer(offer.TargetOffer))
+			{
+				offer.Owner.Inventory.RemoveResources(offer.OwnerOffer);
+				player.Inventory.AddResources(offer.TargetOffer);
+				game.TradeOfferList.Remove(offer);
+				return GameServiceResponses.Success;
+			}
+			else
+			{
+				return GameServiceResponses.NotEnoughResourcesToAcceptTrade;
+			}
 		}
 	}
 }

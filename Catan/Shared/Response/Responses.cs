@@ -46,6 +46,9 @@ namespace Catan.Shared.Response
         CantPlaceCornerWithoutPath,
         SomeHowTheRobberIsMissing,
         GameOver,
-        GameInProgress
-    }
+        GameInProgress,
+		TradeListFull,
+        NotEnoughResourcesToCreateTrade,
+        NotEnoughResourcesToAcceptTrade
+	}
 }

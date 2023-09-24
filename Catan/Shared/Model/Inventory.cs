@@ -53,5 +53,13 @@ namespace Catan.Shared.Model
 		{
 			inventory[resource] -= count;
 		}
+		public int GetResourceCount(Resources resource)
+		{
+			return inventory[resource];
+		}
+		public int GetAllResourcesCount()
+		{
+			return inventory.Values.Sum();
+		}
 	}
 }

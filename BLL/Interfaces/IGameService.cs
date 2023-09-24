@@ -32,5 +32,9 @@ namespace BLL.Interfaces
         public GameServiceResponses IsGameOver(Guid guid);
         public List<Player>? GetPlayers(Guid guid);
         public GameServiceResponses MoveRobber(Guid guid, int id, string name);
+
+		public List<TradeOffer>? GetTradeOffers(Guid guid);
+		public GameServiceResponses RegisterTradeOffer(Guid guid, TradeOffer offer);
+		public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name);
 	}
 }

@@ -23,7 +23,6 @@ namespace Catan.Shared.Model
 		public int lastInitialVillageId { get; set; } = 0;
 		public bool GameOver { get; set; } = false;
 		public Player? Winner { get; set; }
-
-		
+		public List<TradeOffer> TradeOfferList { get; set; } = new List<TradeOffer>();
 	}
 }

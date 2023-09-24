@@ -556,7 +556,16 @@
 		});
 		hubConnection!.On("GameOver", () =>
 		{
-			//TODO
+			//TODO 
+		});
+		hubConnection!.On("FetchTradeOffers", async () =>
+		{
+			var response = await hubConnection!.InvokeAsync<List<TradeOffer>?>("GetTradeOffers", Guid);
+			if (response is not null)
+			{
+				//Trade offerek listáját frissíteni
+			}	
+			StateHasChanged();
 		});
 
 	}
