@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Catan.Shared.Model
 {
-	public enum TerrainType
+	public class TradeOffer
 	{
-		Forest, Mountains, Cropfield, Grassland, Quarry, Desert
+		public Player Owner { get; set; }
+		
 	}
 }

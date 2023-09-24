@@ -51,9 +51,9 @@ namespace BLL.Implementations
 			{
 				return GameServiceResponses.InvalidMember;
 			}
-			player.connectionID = connectionId;
+			player.ConnectionID = connectionId;
 
-			if (game.PlayerList.All(p => p.connectionID is not null) && !game.AlreadyInitialized)
+			if (game.PlayerList.All(p => p.ConnectionID is not null) && !game.AlreadyInitialized)
 			{
 				game.AlreadyInitialized = true;
 				return GameServiceResponses.GameCanStart;
@@ -81,7 +81,7 @@ namespace BLL.Implementations
 				game.PlayersWithSevenOrMoreResources.Clear();
 				foreach (var player in game.PlayerList)
 				{
-					if (player.ResourcesInventory.Values.Sum() >= 7)
+					if (player.Inventory.GetCount() >= 7)
 					{
 						game.PlayersWithSevenOrMoreResources.Add(player);
 					}
@@ -97,29 +97,7 @@ namespace BLL.Implementations
 						{
 							if (corner.Level > 0)
 							{
-								var inventory = corner.Player.ResourcesInventory;
-								switch (field.Type)
-								{
-									case TerrainType.Desert:
-										throw new Exception("why does desert have a number?");
-									case TerrainType.Forest:
-										inventory[Resources.Wood] += corner.Level;
-										break;
-									case TerrainType.Mountains:
-										inventory[Resources.Ore] += corner.Level;
-										break;
-									case TerrainType.Cropfield:
-										inventory[Resources.Wheat] += corner.Level;
-										break;
-									case TerrainType.Grassland:
-										inventory[Resources.Sheep] += corner.Level;
-										break;
-									case TerrainType.Quarry:
-										inventory[Resources.Brick] += corner.Level;
-										break;
-									default:
-										throw new Exception("why doesn't have a matching type?");
-								}
+								corner.Player.Inventory.AddResource(field.Type, corner.Level);
 							}
 						}
 					}
@@ -137,7 +115,7 @@ namespace BLL.Implementations
 			List<string> res = new List<string>();
 			foreach (var player in game.PlayersWithSevenOrMoreResources)
 			{
-				res.Add(player.connectionID!);
+				res.Add(player.ConnectionID!);
 			}
 			return res;
 		}
@@ -148,7 +126,7 @@ namespace BLL.Implementations
             {
                 return null;
             }
-            return game.ActivePlayer.connectionID;
+            return game.ActivePlayer.ConnectionID;
 		}
 		public string? GetActivePlayerName(Guid guid)
 		{
@@ -198,31 +176,9 @@ namespace BLL.Implementations
 					{
 						if (corner.Level > 0)
 						{
-							var inventory = corner.Player.ResourcesInventory;
 							foreach (var field in corner.Fields)
 							{
-								switch (field.Type)
-								{
-									case TerrainType.Desert:
-										break;
-									case TerrainType.Forest:
-										inventory[Resources.Wood] += corner.Level;
-										break;
-									case TerrainType.Mountains:
-										inventory[Resources.Ore] += corner.Level;
-										break;
-									case TerrainType.Cropfield:
-										inventory[Resources.Wheat] += corner.Level;
-										break;
-									case TerrainType.Grassland:
-										inventory[Resources.Sheep] += corner.Level;
-										break;
-									case TerrainType.Quarry:
-										inventory[Resources.Brick] += corner.Level;
-										break;
-									default:
-										throw new Exception("why doesn't have a matching type?");
-								}
+								corner.Player.Inventory.AddResource(field.Type, corner.Level);
 							}
 						}
 					}
@@ -321,17 +277,16 @@ namespace BLL.Implementations
             {
                 return GameServiceResponses.InvalidCorner;
             }
-            var inventory = game.ActivePlayer.ResourcesInventory;
+            var inventory = game.ActivePlayer.Inventory;
             if (corner.Player.Name == name && corner.Level == 1)
             {
-                if (inventory[Resources.Ore] < 3 || inventory[Resources.Wheat] < 2)
+                if (!inventory.HasEnoughForUpgrade())
                 {
 					return GameServiceResponses.NotEnoughResourcesForUpgrade;
                 }
                 else
                 {
-                    inventory[Resources.Ore] -= 3;
-                    inventory[Resources.Wheat] -= 2;
+					inventory.PayForUpgrade();
                     corner.Level = 2;
                     game.ActivePlayer.Points++;
                     if (game.ActivePlayer.Points >= 10)
@@ -350,14 +305,11 @@ namespace BLL.Implementations
             {
 				return GameServiceResponses.CantPlaceCornerWithoutPath;
             }
-            if (inventory[Resources.Wood] <= 0 || inventory[Resources.Wheat] <= 0 || inventory[Resources.Sheep] <= 0 || inventory[Resources.Brick] <= 0)
+            if (!inventory.HasEnoughForVillage())
             {
 				return GameServiceResponses.NotEnoughResourcesForVillage;
             }
-            inventory[Resources.Wood] -= 1;
-            inventory[Resources.Wheat] -= 1;
-            inventory[Resources.Sheep] -= 1;
-            inventory[Resources.Brick] -= 1;
+			inventory.PayForVillage();
             corner.Player = game.ActivePlayer;
             corner.Level = 1;
             game.ActivePlayer.Points++;
@@ -399,14 +351,14 @@ namespace BLL.Implementations
             {
                 return GameServiceResponses.InvalidEdge;
             }
-            var inventory = game.ActivePlayer.ResourcesInventory;
-            if (inventory[Resources.Wood] <= 0 || inventory[Resources.Brick] <= 0)
+			if (edge.Owner.Name is not null)
+			{
+				return GameServiceResponses.EdgeAlreadyTaken;
+			}
+			var inventory = game.ActivePlayer.Inventory;
+            if (!inventory.HasEnoughForRoad())
             {
 				return GameServiceResponses.NotEnoughResourcesForRoad;
-            }
-            if (edge.Owner.Name is not null)
-            {
-				return GameServiceResponses.EdgeAlreadyTaken;
             }
             if (edge.corners[0].Player.Name != name && edge.corners[1].Player.Name != name)
             {
@@ -419,8 +371,7 @@ namespace BLL.Implementations
             }
             game.ActivePlayerCanPlaceInitialRoad = false;
             edge.Owner = game.ActivePlayer;
-            inventory[Resources.Wood] -= 1;
-            inventory[Resources.Brick] -= 1;
+			inventory.PayForRoad();
 			return GameServiceResponses.Success;
         }
         public Dictionary<Resources, int>? GetPlayersInventory(Guid guid, string name)
@@ -435,7 +386,7 @@ namespace BLL.Implementations
 			{
 				return null;
 			}
-			return player.ResourcesInventory;
+			return player.Inventory.GetResources();
 		}
 		public Dictionary<string, int>? GetOtherPlayersInventory(Guid guid, string name)
 		{
@@ -447,9 +398,9 @@ namespace BLL.Implementations
             Dictionary<string, int> res = new Dictionary<string, int>();
 			foreach (var player in game.PlayerList)
 			{
-				if (player.Name != name)
+				if (player.Name is not null && player.Name != name)
 				{
-					var number = player.ResourcesInventory.Values.Sum();
+					var number = player.Inventory.GetCount();
                     res.Add(player.Name, number);
 				}
 			}
@@ -500,15 +451,10 @@ namespace BLL.Implementations
 			if (corner is not null)
 			{
 				var player = game.PlayerList.First(c => c.Name == corner.Player.Name);
-				if (player.ResourcesInventory.Values.Sum() > 0)
+				if (player.Inventory.GetCount() > 0)
 				{
-					Resources stolenResource = (Resources)new Random().Next(0, 5);
-					while (player.ResourcesInventory[stolenResource] <= 0)
-					{
-						stolenResource = (Resources)new Random().Next(0, 5);
-					}
-					player.ResourcesInventory[stolenResource]--;
-					game.ActivePlayer.ResourcesInventory[stolenResource]++;
+					Resources stolenResource = player.Inventory.RobOneResource();
+					game.ActivePlayer.Inventory.AddResource(stolenResource,1);
 				}
 			}
 			game.RobberNeedsMove = false;
