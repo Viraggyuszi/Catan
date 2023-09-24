@@ -12,16 +12,16 @@ namespace Catan.Shared.Model
 		public string? Name { get; set; } //TOOD refactor proper ctor for non-nullable properties
 		public string? Color { get; set; }
 		public int? Points { get; set; }
-        public Inventory Inventory { get; set; }
+        public PlayerInventory Inventory { get; set; }
 
         public string? ConnectionID { get; set; }
         public Player()
         {
-            Inventory = new Inventory();
+            Inventory = new PlayerInventory();
         }
         public Player(Player player)
         {
-            Inventory=new Inventory();
+            Inventory=new PlayerInventory();
             Name = player.Name;
             Color = player.Color;
             Points = player.Points;

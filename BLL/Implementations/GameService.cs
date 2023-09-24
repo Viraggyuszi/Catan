@@ -453,7 +453,8 @@ namespace BLL.Implementations
 				var player = game.PlayerList.First(c => c.Name == corner.Player.Name);
 				if (player.Inventory.GetCount() > 0)
 				{
-					Resources stolenResource = player.Inventory.RobOneResource();
+					Resources stolenResource = player.Inventory.GetRandomResource();
+					player.Inventory.RemoveResource(stolenResource, 1);
 					game.ActivePlayer.Inventory.AddResource(stolenResource,1);
 				}
 			}
