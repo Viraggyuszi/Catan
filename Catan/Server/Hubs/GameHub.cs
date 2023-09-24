@@ -100,7 +100,7 @@ namespace Catan.Server.Hubs
 			{
 				foreach (var connection in conIDsWithSevenOrMoreResources)
 				{
-					//Clients.Client(connection).SendAsync("ResolveSevenRoll"); // TODO kliens oldalon kezelni, hogy nyersanyagot eldobjon
+					Clients.Client(connection).SendAsync("ResolveSevenRoll"); // TODO kliens oldalon kezelni, hogy nyersanyagot eldobjon
 				}
 			}
 			else
@@ -110,7 +110,7 @@ namespace Catan.Server.Hubs
 			var conId = _gameService.GetActivePlayerConnectionId(guid);
 			if (conId is not null)
 			{
-				Clients.Client(conId).SendAsync("ResolveRobberMovement"); // rabló mozgatását kliens oldalról kezelni
+				Clients.Client(conId).SendAsync("ResolveRobberMovement");
 			}
 			else
 			{
@@ -118,6 +118,15 @@ namespace Catan.Server.Hubs
 			}
 			//TODO a felező algoritmus visszatér az eldobott nyersanyagokkal, sszerver oldalon ellenőrizni, hogy tényleg jó mennyiséget dobott-e el
 			//ha igen, ha minden pacek, akkor pedig mindenkinek frissíti a játékot.
+		}
+		public void ThrowResourcesOnSevenRoll(Actor actor, string guidstring, Inventory inventory)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid=Guid.Parse(guidstring);
+
 		}
 		public string GetMap(string guidstring)
 		{
@@ -366,7 +375,15 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("You can't send trade offers during someone else's turn");
 			}
-			var response = _gameService.RegisterTradeOffer(Guid.Parse(guidstring), tradeOffer); //TODO
+			if (tradeOffer.ToPlayers)
+			{
+				var response = _gameService.RegisterTradeOffer(Guid.Parse(guidstring), tradeOffer); //TODO
+			}
+			else
+			{
+				var response = _gameService.RegisterTradeOfferWithBank(Guid.Parse(guidstring), tradeOffer); //TODO
+			}
+			
 			await NotifyClients(Guid.Parse(guidstring));
 		}
 		public async Task AcceptTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer) //TODO kliens oldalról még indítani kell

@@ -49,6 +49,9 @@ namespace Catan.Shared.Response
         GameInProgress,
 		TradeListFull,
         NotEnoughResourcesToCreateTrade,
-        NotEnoughResourcesToAcceptTrade
+        NotEnoughResourcesToAcceptTrade,
+        BadResourceCountForTradingWithBank,
+        NotEnoughResourceThrown,
+        InvalidResourcesHaveBeenThrown
 	}
 }

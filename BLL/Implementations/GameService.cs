@@ -3,6 +3,7 @@ using Catan.Shared.Model;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -77,7 +78,7 @@ namespace BLL.Implementations
 			if (sum == 7)
 			{
 				game.RobberNeedsMove = true;
-				//game.ResolveResourceCount = true;
+				game.ResolveResourceCount = true;
 				game.PlayersWithSevenOrMoreResources.Clear();
 				foreach (var player in game.PlayerList)
 				{
@@ -474,7 +475,30 @@ namespace BLL.Implementations
 			}
 			return game.TradeOfferList;
 		}
-		
+		public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			if (game.ActivePlayer.Name != offer.Owner.Name)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			if (game.ActivePlayer.Inventory.HasEnoughResourcesForTradeOffer(offer.OwnerOffer))
+			{
+				if (offer.OwnerOffer.GetAllResourcesCount() == offer.TargetOffer.GetAllResourcesCount() * 4)
+				{
+					offer.Owner.Inventory.RemoveResources(offer.OwnerOffer);
+					offer.Owner.Inventory.AddResources(offer.TargetOffer);
+					return GameServiceResponses.Success;
+				}
+				return GameServiceResponses.BadResourceCountForTradingWithBank;
+			}
+			return GameServiceResponses.NotEnoughResourcesToCreateTrade;
+
+		}
 		public GameServiceResponses RegisterTradeOffer(Guid guid, TradeOffer offer)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
@@ -515,11 +539,17 @@ namespace BLL.Implementations
 			{
 				return GameServiceResponses.InvalidMember;
 			}
-			var player=game.PlayerList.First(p=>p.Name==name);
+			var player=game.PlayerList.FirstOrDefault(p=>p.Name==name);
+			if (player is null)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
 			if (player.Inventory.HasEnoughResourcesForTradeOffer(offer.TargetOffer))
 			{
 				offer.Owner.Inventory.RemoveResources(offer.OwnerOffer);
-				player.Inventory.AddResources(offer.TargetOffer);
+				offer.Owner.Inventory.AddResources(offer.TargetOffer);
+				player.Inventory.RemoveResources(offer.TargetOffer);
+				player.Inventory.AddResources(offer.OwnerOffer);
 				game.TradeOfferList.Remove(offer);
 				return GameServiceResponses.Success;
 			}
@@ -527,6 +557,41 @@ namespace BLL.Implementations
 			{
 				return GameServiceResponses.NotEnoughResourcesToAcceptTrade;
 			}
+		}
+		public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name) //TODO
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var player=game.PlayerList.FirstOrDefault(p=>p.Name==name);
+			if (player is null)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			if (player.Inventory.GetAllResourcesCount()/2==thrownResources.GetAllResourcesCount())
+			{
+				if (!player.Inventory.HasEnoughResourcesForTradeOffer(thrownResources))
+				{
+					return GameServiceResponses.InvalidResourcesHaveBeenThrown;
+				}
+				player.Inventory.RemoveResources(thrownResources);
+				game.PlayersWithSevenOrMoreResources.Remove(player);
+				if (game.PlayersWithSevenOrMoreResources.Count()==0)
+				{
+					game.ResolveResourceCount = false;
+					foreach (var p in game.PlayerList)
+					{
+						if (p.Inventory.GetAllResourcesCount()>=7)
+						{
+							game.PlayersWithSevenOrMoreResources.Add(p);
+						}
+					}
+				}
+				return GameServiceResponses.Success;
+			}
+			return GameServiceResponses.NotEnoughResourceThrown;
 		}
 	}
 }

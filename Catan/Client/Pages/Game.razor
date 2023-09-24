@@ -476,7 +476,13 @@
 		});
 		hubConnection!.On("ResolveSevenRoll", () =>
 		{
-			resolveSevenOrMoreResources = true;
+			resolveSevenOrMoreResources = true; //TODO meg kell jeleníteni egy gui-s részt, ahol be lehet kattingatni, hogy miket akarsz eldobálni
+			StateHasChanged();
+		});
+		hubConnection!.On("SevenRollResolved", () =>
+		{
+			resolveSevenOrMoreResources = false;
+			StateHasChanged();
 		});
 		hubConnection!.On("ResolveRobberMovement", () =>
 		{

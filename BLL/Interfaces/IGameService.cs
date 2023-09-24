@@ -35,6 +35,9 @@ namespace BLL.Interfaces
 
 		public List<TradeOffer>? GetTradeOffers(Guid guid);
 		public GameServiceResponses RegisterTradeOffer(Guid guid, TradeOffer offer);
+		public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer);
 		public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name);
+
+		public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name);
 	}
 }
