@@ -3,6 +3,7 @@ using Catan.Shared.Model;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -51,9 +52,9 @@ namespace BLL.Implementations
 			{
 				return GameServiceResponses.InvalidMember;
 			}
-			player.connectionID = connectionId;
+			player.ConnectionID = connectionId;
 
-			if (game.PlayerList.All(p => p.connectionID is not null) && !game.AlreadyInitialized)
+			if (game.PlayerList.All(p => p.ConnectionID is not null) && !game.AlreadyInitialized)
 			{
 				game.AlreadyInitialized = true;
 				return GameServiceResponses.GameCanStart;
@@ -77,11 +78,11 @@ namespace BLL.Implementations
 			if (sum == 7)
 			{
 				game.RobberNeedsMove = true;
-				//game.ResolveResourceCount = true;
+				game.ResolveResourceCount = true;
 				game.PlayersWithSevenOrMoreResources.Clear();
 				foreach (var player in game.PlayerList)
 				{
-					if (player.ResourcesInventory.Values.Sum() >= 7)
+					if (player.Inventory.GetAllResourcesCount() >= 7)
 					{
 						game.PlayersWithSevenOrMoreResources.Add(player);
 					}
@@ -97,29 +98,7 @@ namespace BLL.Implementations
 						{
 							if (corner.Level > 0)
 							{
-								var inventory = corner.Player.ResourcesInventory;
-								switch (field.Type)
-								{
-									case TerrainType.Desert:
-										throw new Exception("why does desert have a number?");
-									case TerrainType.Forest:
-										inventory[Resources.Wood] += corner.Level;
-										break;
-									case TerrainType.Mountains:
-										inventory[Resources.Ore] += corner.Level;
-										break;
-									case TerrainType.Cropfield:
-										inventory[Resources.Wheat] += corner.Level;
-										break;
-									case TerrainType.Grassland:
-										inventory[Resources.Sheep] += corner.Level;
-										break;
-									case TerrainType.Quarry:
-										inventory[Resources.Brick] += corner.Level;
-										break;
-									default:
-										throw new Exception("why doesn't have a matching type?");
-								}
+								corner.Player.Inventory.AddResource(field.Type, corner.Level);
 							}
 						}
 					}
@@ -137,7 +116,7 @@ namespace BLL.Implementations
 			List<string> res = new List<string>();
 			foreach (var player in game.PlayersWithSevenOrMoreResources)
 			{
-				res.Add(player.connectionID!);
+				res.Add(player.ConnectionID!);
 			}
 			return res;
 		}
@@ -148,7 +127,7 @@ namespace BLL.Implementations
             {
                 return null;
             }
-            return game.ActivePlayer.connectionID;
+            return game.ActivePlayer.ConnectionID;
 		}
 		public string? GetActivePlayerName(Guid guid)
 		{
@@ -188,6 +167,7 @@ namespace BLL.Implementations
                 return GameServiceResponses.InvalidGame;
             }
 			game.ActivePlayer = game.PlayerList[(game.PlayerList.IndexOf(game.ActivePlayer) + 1) % game.PlayerList.Count];
+			game.TradeOfferList.Clear();
 			if (game.InitialRound)
 			{
 				game.InitialRoundCount--;
@@ -198,31 +178,9 @@ namespace BLL.Implementations
 					{
 						if (corner.Level > 0)
 						{
-							var inventory = corner.Player.ResourcesInventory;
 							foreach (var field in corner.Fields)
 							{
-								switch (field.Type)
-								{
-									case TerrainType.Desert:
-										break;
-									case TerrainType.Forest:
-										inventory[Resources.Wood] += corner.Level;
-										break;
-									case TerrainType.Mountains:
-										inventory[Resources.Ore] += corner.Level;
-										break;
-									case TerrainType.Cropfield:
-										inventory[Resources.Wheat] += corner.Level;
-										break;
-									case TerrainType.Grassland:
-										inventory[Resources.Sheep] += corner.Level;
-										break;
-									case TerrainType.Quarry:
-										inventory[Resources.Brick] += corner.Level;
-										break;
-									default:
-										throw new Exception("why doesn't have a matching type?");
-								}
+								corner.Player.Inventory.AddResource(field.Type, corner.Level);
 							}
 						}
 					}
@@ -321,17 +279,16 @@ namespace BLL.Implementations
             {
                 return GameServiceResponses.InvalidCorner;
             }
-            var inventory = game.ActivePlayer.ResourcesInventory;
+            var inventory = game.ActivePlayer.Inventory;
             if (corner.Player.Name == name && corner.Level == 1)
             {
-                if (inventory[Resources.Ore] < 3 || inventory[Resources.Wheat] < 2)
+                if (!inventory.HasEnoughForUpgrade())
                 {
 					return GameServiceResponses.NotEnoughResourcesForUpgrade;
                 }
                 else
                 {
-                    inventory[Resources.Ore] -= 3;
-                    inventory[Resources.Wheat] -= 2;
+					inventory.PayForUpgrade();
                     corner.Level = 2;
                     game.ActivePlayer.Points++;
                     if (game.ActivePlayer.Points >= 10)
@@ -350,14 +307,11 @@ namespace BLL.Implementations
             {
 				return GameServiceResponses.CantPlaceCornerWithoutPath;
             }
-            if (inventory[Resources.Wood] <= 0 || inventory[Resources.Wheat] <= 0 || inventory[Resources.Sheep] <= 0 || inventory[Resources.Brick] <= 0)
+            if (!inventory.HasEnoughForVillage())
             {
 				return GameServiceResponses.NotEnoughResourcesForVillage;
             }
-            inventory[Resources.Wood] -= 1;
-            inventory[Resources.Wheat] -= 1;
-            inventory[Resources.Sheep] -= 1;
-            inventory[Resources.Brick] -= 1;
+			inventory.PayForVillage();
             corner.Player = game.ActivePlayer;
             corner.Level = 1;
             game.ActivePlayer.Points++;
@@ -399,14 +353,14 @@ namespace BLL.Implementations
             {
                 return GameServiceResponses.InvalidEdge;
             }
-            var inventory = game.ActivePlayer.ResourcesInventory;
-            if (inventory[Resources.Wood] <= 0 || inventory[Resources.Brick] <= 0)
+			if (edge.Owner.Name is not null)
+			{
+				return GameServiceResponses.EdgeAlreadyTaken;
+			}
+			var inventory = game.ActivePlayer.Inventory;
+            if (!inventory.HasEnoughForRoad())
             {
 				return GameServiceResponses.NotEnoughResourcesForRoad;
-            }
-            if (edge.Owner.Name is not null)
-            {
-				return GameServiceResponses.EdgeAlreadyTaken;
             }
             if (edge.corners[0].Player.Name != name && edge.corners[1].Player.Name != name)
             {
@@ -419,8 +373,7 @@ namespace BLL.Implementations
             }
             game.ActivePlayerCanPlaceInitialRoad = false;
             edge.Owner = game.ActivePlayer;
-            inventory[Resources.Wood] -= 1;
-            inventory[Resources.Brick] -= 1;
+			inventory.PayForRoad();
 			return GameServiceResponses.Success;
         }
         public Dictionary<Resources, int>? GetPlayersInventory(Guid guid, string name)
@@ -435,7 +388,7 @@ namespace BLL.Implementations
 			{
 				return null;
 			}
-			return player.ResourcesInventory;
+			return player.Inventory.GetResources();
 		}
 		public Dictionary<string, int>? GetOtherPlayersInventory(Guid guid, string name)
 		{
@@ -447,9 +400,9 @@ namespace BLL.Implementations
             Dictionary<string, int> res = new Dictionary<string, int>();
 			foreach (var player in game.PlayerList)
 			{
-				if (player.Name != name)
+				if (player.Name is not null && player.Name != name)
 				{
-					var number = player.ResourcesInventory.Values.Sum();
+					var number = player.Inventory.GetAllResourcesCount();
                     res.Add(player.Name, number);
 				}
 			}
@@ -500,19 +453,145 @@ namespace BLL.Implementations
 			if (corner is not null)
 			{
 				var player = game.PlayerList.First(c => c.Name == corner.Player.Name);
-				if (player.ResourcesInventory.Values.Sum() > 0)
+				if (player.Inventory.GetAllResourcesCount() > 0)
 				{
-					Resources stolenResource = (Resources)new Random().Next(0, 5);
-					while (player.ResourcesInventory[stolenResource] <= 0)
-					{
-						stolenResource = (Resources)new Random().Next(0, 5);
-					}
-					player.ResourcesInventory[stolenResource]--;
-					game.ActivePlayer.ResourcesInventory[stolenResource]++;
+					Resources stolenResource = player.Inventory.GetRandomResource();
+					player.Inventory.RemoveResource(stolenResource, 1);
+					game.ActivePlayer.Inventory.AddResource(stolenResource,1);
 				}
 			}
 			game.RobberNeedsMove = false;
 			return GameServiceResponses.Success;
+		}
+		
+		
+		
+		public List<TradeOffer>? GetTradeOffers(Guid guid) 
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return null;
+			}
+			return game.TradeOfferList;
+		}
+		public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			if (game.ActivePlayer.Name != offer.Owner.Name)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			if (game.ActivePlayer.Inventory.HasEnoughResourcesForTradeOffer(offer.OwnerOffer))
+			{
+				if (offer.OwnerOffer.GetAllResourcesCount() == offer.TargetOffer.GetAllResourcesCount() * 4)
+				{
+					offer.Owner.Inventory.RemoveResources(offer.OwnerOffer);
+					offer.Owner.Inventory.AddResources(offer.TargetOffer);
+					return GameServiceResponses.Success;
+				}
+				return GameServiceResponses.BadResourceCountForTradingWithBank;
+			}
+			return GameServiceResponses.NotEnoughResourcesToCreateTrade;
+
+		}
+		public GameServiceResponses RegisterTradeOffer(Guid guid, TradeOffer offer)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			if (game.ActivePlayer.Name != offer.Owner.Name)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			if (game.TradeOfferList.Count<3)
+			{
+				if (game.ActivePlayer.Inventory.HasEnoughResourcesForTradeOffer(offer.OwnerOffer))
+				{
+					game.TradeOfferList.Add(offer);
+					return GameServiceResponses.Success;
+				}
+				else
+				{
+					return GameServiceResponses.NotEnoughResourcesToCreateTrade;
+				}
+			}
+			else
+			{
+				return GameServiceResponses.TradeListFull;
+			}
+		}
+
+		public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			if (offer.Owner.Name==name)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			var player=game.PlayerList.FirstOrDefault(p=>p.Name==name);
+			if (player is null)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			if (player.Inventory.HasEnoughResourcesForTradeOffer(offer.TargetOffer))
+			{
+				offer.Owner.Inventory.RemoveResources(offer.OwnerOffer);
+				offer.Owner.Inventory.AddResources(offer.TargetOffer);
+				player.Inventory.RemoveResources(offer.TargetOffer);
+				player.Inventory.AddResources(offer.OwnerOffer);
+				game.TradeOfferList.Remove(offer);
+				return GameServiceResponses.Success;
+			}
+			else
+			{
+				return GameServiceResponses.NotEnoughResourcesToAcceptTrade;
+			}
+		}
+		public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name) //TODO
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var player=game.PlayerList.FirstOrDefault(p=>p.Name==name);
+			if (player is null)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			if (player.Inventory.GetAllResourcesCount()/2==thrownResources.GetAllResourcesCount())
+			{
+				if (!player.Inventory.HasEnoughResourcesForTradeOffer(thrownResources))
+				{
+					return GameServiceResponses.InvalidResourcesHaveBeenThrown;
+				}
+				player.Inventory.RemoveResources(thrownResources);
+				game.PlayersWithSevenOrMoreResources.Remove(player);
+				if (game.PlayersWithSevenOrMoreResources.Count()==0)
+				{
+					game.ResolveResourceCount = false;
+					foreach (var p in game.PlayerList)
+					{
+						if (p.Inventory.GetAllResourcesCount()>=7)
+						{
+							game.PlayersWithSevenOrMoreResources.Add(p);
+						}
+					}
+				}
+				return GameServiceResponses.Success;
+			}
+			return GameServiceResponses.NotEnoughResourceThrown;
 		}
 	}
 }

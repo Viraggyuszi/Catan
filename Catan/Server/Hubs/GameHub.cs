@@ -71,6 +71,10 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("Using other player's name");
 			}
+			if (actor.Name != GetCurrentPlayer(guidstring))
+			{
+				throw new Exception("You can't roll dices during someone else's turn");
+			}
 			Guid guid = Guid.Parse(guidstring);
 			var dices = _gameService.RollDices(guid);
 			if (dices is not null)
@@ -96,7 +100,7 @@ namespace Catan.Server.Hubs
 			{
 				foreach (var connection in conIDsWithSevenOrMoreResources)
 				{
-					//Clients.Client(connection).SendAsync("ResolveSevenRoll"); // TODO kliens oldalon kezelni, hogy nyersanyagot eldobjon
+					Clients.Client(connection).SendAsync("ResolveSevenRoll"); // TODO kliens oldalon kezelni, hogy nyersanyagot eldobjon
 				}
 			}
 			else
@@ -106,7 +110,7 @@ namespace Catan.Server.Hubs
 			var conId = _gameService.GetActivePlayerConnectionId(guid);
 			if (conId is not null)
 			{
-				Clients.Client(conId).SendAsync("ResolveRobberMovement"); // rabló mozgatását kliens oldalról kezelni
+				Clients.Client(conId).SendAsync("ResolveRobberMovement");
 			}
 			else
 			{
@@ -114,6 +118,16 @@ namespace Catan.Server.Hubs
 			}
 			//TODO a felező algoritmus visszatér az eldobott nyersanyagokkal, sszerver oldalon ellenőrizni, hogy tényleg jó mennyiséget dobott-e el
 			//ha igen, ha minden pacek, akkor pedig mindenkinek frissíti a játékot.
+		}
+		public async Task ThrowResourcesOnSevenRoll(Actor actor, string guidstring, Inventory inventory)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid=Guid.Parse(guidstring);
+			var response = _gameService.ThrowResources(guid, inventory, actor.Name);
+			await NotifyClients(Guid.Parse(guidstring));
 		}
 		public string GetMap(string guidstring)
 		{
@@ -155,11 +169,11 @@ namespace Catan.Server.Hubs
 			}
 			else if (_gameService.IsInitialRound(guid) == GameServiceResponses.InitialRound)
 			{
-				await Clients.Client(connection).SendAsync("PlaceInitialVillage"); //hívás ha initial kör van
+				await Clients.Client(connection).SendAsync("PlaceInitialVillage");
 			}
 			else
 			{
-				await Clients.Client(connection).SendAsync("TakeNormalTurn"); //hívás ha már nem az első kör van
+				await Clients.Client(connection).SendAsync("TakeNormalTurn");
 			}
 		}
 		public async Task ClaimInitialVillage(Actor actor,string guidstring,int id)
@@ -231,12 +245,12 @@ namespace Catan.Server.Hubs
 		{
 			await Clients.Group(guid.ToString()).SendAsync("ProcessCurrentPlayer",GetCurrentPlayer(guid.ToString()));
 			await Clients.Group(guid.ToString()).SendAsync("FetchResources");
+			await Clients.Group(guid.ToString()).SendAsync("FetchTradeOffers"); //TODO külön hívásba
 		}
 		private async Task NotifyMapChanged(Guid guid)
 		{
 			await Clients.Group(guid.ToString()).SendAsync("ProcessMap", GetMap(guid.ToString()));
 		}
-
 		public async Task ClaimCorner(Actor actor, string guidstring, int id)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
@@ -267,7 +281,6 @@ namespace Catan.Server.Hubs
 				}
 			}
 		}
-
 		public async Task ClaimEdge(Actor actor, string guidstring, int id)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
@@ -299,7 +312,6 @@ namespace Catan.Server.Hubs
 				}
 			}
 		}
-
 		public FetchInventoryDTO GetPlayersInventories(Actor actor, string guidstring)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
@@ -312,7 +324,6 @@ namespace Catan.Server.Hubs
 			result.OthersInventory=_gameService.GetOtherPlayersInventory(guid,actor.Name) ?? throw new Exception("refactorme, no other inventory");
 			return result;
 		}
-
 		public List<Player> GetPlayerList(Actor actor, string guidstring)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
@@ -322,7 +333,6 @@ namespace Catan.Server.Hubs
 			Guid guid = Guid.Parse(guidstring);
 			return _gameService.GetPlayers(guid) ?? throw new Exception("refactorme, playerlist is null");
 		}
-
 		public async Task MoveRobber(Actor actor, string guidstring, int id)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
@@ -339,7 +349,7 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					_gameService.MoveRobber(guid, id, actor.Name!);
+					_gameService.MoveRobber(guid, id, actor.Name!); //TODO
 					await NotifyMapChanged(guid);
 					await NotifyClients(guid);
 					await Clients.Caller.SendAsync("RobberMovementResolved");
@@ -349,6 +359,46 @@ namespace Catan.Server.Hubs
 					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
 				}
 			}
+		}
+		
+
+		public List<TradeOffer>? GetTradeOffers(string guidstring) //TODO kliensoldalról még indítani kell 
+		{
+			return _gameService.GetTradeOffers(Guid.Parse(guidstring));
+		}
+		public async Task SendTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer) //TODO kliens oldalról még indítani kell
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			if (actor.Name != GetCurrentPlayer(guidstring))
+			{
+				throw new Exception("You can't send trade offers during someone else's turn");
+			}
+			if (tradeOffer.ToPlayers)
+			{
+				var response = _gameService.RegisterTradeOffer(Guid.Parse(guidstring), tradeOffer); //TODO
+			}
+			else
+			{
+				var response = _gameService.RegisterTradeOfferWithBank(Guid.Parse(guidstring), tradeOffer); //TODO
+			}
+			
+			await NotifyClients(Guid.Parse(guidstring));
+		}
+		public async Task AcceptTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer) //TODO kliens oldalról még indítani kell
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			if (actor.Name == GetCurrentPlayer(guidstring))
+			{
+				throw new Exception("You can't accept trade offers during your turn");
+			}
+			var response = _gameService.AcceptTradeOffer(Guid.Parse(guidstring), tradeOffer, actor.Name); //TODO
+			await NotifyClients(Guid.Parse(guidstring));
 		}
 	}
 }

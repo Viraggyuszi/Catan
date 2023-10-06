@@ -8,6 +8,6 @@ namespace Catan.Shared.Model
 {
 	public enum TerrainType
 	{
-		Desert, Forest, Mountains, Cropfield, Grassland, Quarry
+		Forest, Mountains, Cropfield, Grassland, Quarry, Desert
 	}
 }
