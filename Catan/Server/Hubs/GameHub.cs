@@ -119,14 +119,15 @@ namespace Catan.Server.Hubs
 			//TODO a felező algoritmus visszatér az eldobott nyersanyagokkal, sszerver oldalon ellenőrizni, hogy tényleg jó mennyiséget dobott-e el
 			//ha igen, ha minden pacek, akkor pedig mindenkinek frissíti a játékot.
 		}
-		public void ThrowResourcesOnSevenRoll(Actor actor, string guidstring, Inventory inventory)
+		public async Task ThrowResourcesOnSevenRoll(Actor actor, string guidstring, Inventory inventory)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
 				throw new Exception("Using other player's name");
 			}
 			Guid guid=Guid.Parse(guidstring);
-
+			var response = _gameService.ThrowResources(guid, inventory, actor.Name);
+			await NotifyClients(Guid.Parse(guidstring));
 		}
 		public string GetMap(string guidstring)
 		{
