@@ -31,6 +31,7 @@ namespace Catan.Shared.Response
         InvalidCorner,
         InvalidEdge,
         InvalidField,
+        ActorIsNotActivePlayer,
         GameCanStart,
         GameCantStart,
         InitialRound,

@@ -5,17 +5,17 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Database;
 using Database.Data;
-using BLL.Implementations;
-using BLL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Catan.Shared.Request;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using Catan.Shared.Response;
+using BLL.Services.Interfaces;
+using BLL.Services;
 
 namespace Catan.Server.Hubs
 {
-	[Authorize]
+    [Authorize]
 	public class GameHub : Hub
 	{
 		private readonly IGameService _gameService;
@@ -61,7 +61,7 @@ namespace Catan.Server.Hubs
 				throw new Exception("You can't end your turn during someone else's turn");
 			}
 			Guid guid = Guid.Parse(guidstring);
-			_gameService.NextTurn(guid);
+			_gameService.EndPlayerTurn(guid,actor.Name);
 			await Clients.Caller.SendAsync("TurnEnded");
 			await CallNextPlayer(guid);
 		}
@@ -236,7 +236,7 @@ namespace Catan.Server.Hubs
 					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
 					return;
 				}
-				_gameService.NextTurn(guid);
+				var response2 = _gameService.EndPlayerTurn(guid, actor.Name);//TODO
 				await CallNextPlayer(guid);
 				await NotifyClients(guid);
 			}

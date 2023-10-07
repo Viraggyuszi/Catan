@@ -1,4 +1,4 @@
-﻿using BLL.Interfaces;
+﻿using BLL.Services.Interfaces;
 using Catan.Shared.Model;
 using Catan.Shared.Response;
 using System;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.Implementations
+namespace BLL.Services.Implementations
 {
     public class InMemoryDatabaseGame : IInMemoryDatabaseGame
     {

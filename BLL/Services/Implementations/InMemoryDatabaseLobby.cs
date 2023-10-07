@@ -1,4 +1,4 @@
-﻿using BLL.Interfaces;
+﻿using BLL.Services.Interfaces;
 using Catan.Shared.Model;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
@@ -10,23 +10,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.Implementations
+namespace BLL.Services.Implementations
 {
     public class InMemoryDatabaseLobby : IInMemoryDatabaseLobby
     {
         private ConcurrentDictionary<Guid, Lobby> GuidLobbyPairs { get; set; }
 
-        public InMemoryDatabaseLobby() 
+        public InMemoryDatabaseLobby()
         {
             GuidLobbyPairs = new ConcurrentDictionary<Guid, Lobby>();
         }
         public InMemoryDatabaseLobbyResponses AddLobby(Guid guid, Lobby lobby)
         {
-            return GuidLobbyPairs.TryAdd(guid, lobby)?InMemoryDatabaseLobbyResponses.Success:InMemoryDatabaseLobbyResponses.CreateLobbyFailed;
+            return GuidLobbyPairs.TryAdd(guid, lobby) ? InMemoryDatabaseLobbyResponses.Success : InMemoryDatabaseLobbyResponses.CreateLobbyFailed;
         }
         public InMemoryDatabaseLobbyResponses RemoveLobby(Guid guid)
         {
-            return GuidLobbyPairs.TryRemove(guid, out _)? InMemoryDatabaseLobbyResponses.Success: InMemoryDatabaseLobbyResponses.RemoveLobbyFailed;
+            return GuidLobbyPairs.TryRemove(guid, out _) ? InMemoryDatabaseLobbyResponses.Success : InMemoryDatabaseLobbyResponses.RemoveLobbyFailed;
         }
         public InMemoryDatabaseLobbyResponses AddPlayerToLobby(Player player, Guid guid)
         {

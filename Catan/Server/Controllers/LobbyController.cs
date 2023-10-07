@@ -1,5 +1,5 @@
-﻿using BLL.Implementations;
-using BLL.Interfaces;
+﻿using BLL.Services;
+using BLL.Services.Interfaces;
 using Catan.Shared.Model;
 using Catan.Shared.Request;
 using Catan.Shared.Response;

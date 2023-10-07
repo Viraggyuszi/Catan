@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Catan.Shared.Model
+namespace BLL.GameActions.RollDiceAction.Implementations
 {
-	public enum TerrainType
+	public class BaseRollDiceAction
 	{
-		Forest, Mountains, Cropfield, Grassland, Quarry, Desert, Sea
+		//TODO lásd interfész
 	}
 }

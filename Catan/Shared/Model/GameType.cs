@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Catan.Shared.Model
 {
-	public enum TerrainType
+	public enum GameType
 	{
-		Forest, Mountains, Cropfield, Grassland, Quarry, Desert, Sea
+		Base, Seafarer //...
 	}
 }

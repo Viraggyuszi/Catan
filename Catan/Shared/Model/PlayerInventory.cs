@@ -60,7 +60,7 @@ namespace Catan.Shared.Model
 			int rnd = new Random().Next(0, list.Count());
 			return list[rnd];
 		}
-		public bool HasEnoughResourcesForTradeOffer(Inventory _inventory)
+		public bool HasSufficientResources(Inventory _inventory)
 		{
 			if (_inventory.GetResourceCount(Resources.Wood) > inventory[Resources.Wood]) return false;
 			if (_inventory.GetResourceCount(Resources.Brick) > inventory[Resources.Brick]) return false;
