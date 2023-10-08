@@ -1,8 +1,8 @@
-﻿using Catan.Shared.Model;
+﻿using Catan.Shared.Model.GameMap;
 
 namespace Catan.Client.ViewModels
 {
-	public class EdgeLine
+    public class EdgeLine
 	{
 		public Vertex[] endPoints = new Vertex[4];
 		public Edge Edge { get; set; }

@@ -1,10 +1,10 @@
-﻿using BLL.Implementations;
-using BLL.Interfaces;
+﻿using BLL.Services.Implementations;
+using BLL.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BLL
 {
-	public static class Startup
+    public static class Startup
 	{
 		public static void ConfigureServices(IServiceCollection services)
 		{

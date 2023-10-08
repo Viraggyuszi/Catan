@@ -1,6 +1,6 @@
-﻿using BLL.Implementations;
-using BLL.Interfaces;
-using Catan.Shared.Model;
+﻿using BLL.Services;
+using BLL.Services.Interfaces;
+using Catan.Shared.Model.GameState;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using Microsoft.AspNetCore.Authorization;

@@ -1,4 +1,4 @@
-﻿using BLL.Implementations;
+﻿using BLL.Services.Implementations;
 using Catan.Shared.Request;
 using Microsoft.AspNetCore.Mvc;
 

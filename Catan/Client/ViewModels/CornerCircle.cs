@@ -1,8 +1,8 @@
-﻿using Catan.Shared.Model;
+﻿using Catan.Shared.Model.GameMap;
 
 namespace Catan.Client.ViewModels
 {
-	public class CornerCircle
+    public class CornerCircle
 	{
 		public Vertex BaseVertex { get; set; }
 		public Corner Corner { get; set; }

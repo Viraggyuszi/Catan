@@ -1,6 +1,4 @@
-﻿using BLL.Implementations;
-using BLL.Interfaces;
-using Catan.Shared.Model;
+﻿using Catan.Shared.Model;
 using Catan.Shared.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +8,11 @@ using Microsoft.AspNetCore.SignalR;
 using Catan.Server.Hubs;
 using Azure;
 using System;
+using BLL.Services.Interfaces;
 
 namespace Catan.Server.Controllers
 {
-	[Authorize]
+    [Authorize]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class GameController : ControllerBase

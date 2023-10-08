@@ -31,6 +31,7 @@ namespace Catan.Shared.Response
         InvalidCorner,
         InvalidEdge,
         InvalidField,
+        ActorIsNotActivePlayer,
         GameCanStart,
         GameCantStart,
         InitialRound,
@@ -52,6 +53,7 @@ namespace Catan.Shared.Response
         NotEnoughResourcesToAcceptTrade,
         BadResourceCountForTradingWithBank,
         NotEnoughResourceThrown,
-        InvalidResourcesHaveBeenThrown
+        InvalidResourcesHaveBeenThrown,
+        SuccessWithSevenRoll
 	}
 }
