@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace BLL.GameActions.ClaimInitialEdgeAction
 {
     public interface IClaimInitialEdgeAction
-	{
-		public GameServiceResponses Execute(Game game, int edgeId, string name);
-	}
+    {
+        public GameServiceResponses Execute(Game game, int edgeId, string name);
+    }
 }

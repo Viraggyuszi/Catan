@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace BLL.GameActions.AcceptTradeOfferAction
 {
     public interface IAcceptTradeOfferAction
-	{
-		public GameServiceResponses Execute(Game game, TradeOffer offer, string name);
-	}
+    {
+        public GameServiceResponses Execute(Game game, TradeOffer offer, string name);
+    }
 }

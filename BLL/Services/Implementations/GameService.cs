@@ -1,7 +1,9 @@
 ﻿using BLL.GameActions;
 using BLL.Services.Interfaces;
+using Catan.Shared.Model;
 using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
+using Catan.Shared.Model.GameState.Dice;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
@@ -23,12 +25,12 @@ namespace BLL.Services.Implementations
     {
         private readonly IInMemoryDatabaseGame _inMemoryDatabaseGame;
         private readonly IMapService _mapService;
-        private readonly GameActionHandler gameActionHandler;
+        private readonly GameActionHandler _gameActionHandler;
         public GameService(IInMemoryDatabaseGame inMemoryDatabaseGame, IMapService mapService)
         {
             _inMemoryDatabaseGame = inMemoryDatabaseGame;
             _mapService = mapService;
-            //gameActionHandler = new GameActionHandler(); //Factory gyártsa nekünk ezt, megfelelő implementációkkal feltöltve!
+			_gameActionHandler = new GameActionHandlerFactory().CreateActionHandler(GameType.Base); //Factory gyártsa nekünk ezt, megfelelő implementációkkal feltöltve!
         }
         public InMemoryDatabaseGameResponses RegisterGame(Guid guid, Game game)
         {
@@ -110,6 +112,15 @@ namespace BLL.Services.Implementations
 			}
 			return game.ActivePlayer.Name;
 		}
+		public List<DiceValue>? GetLastRolledDices(Guid guid)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return null;
+			}
+			return game.LastRolledValues;
+		}
 		public GameServiceResponses IsInitialRound(Guid guid)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
@@ -185,7 +196,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteEndTurnAction(game, name);
+			return _gameActionHandler.ExecuteEndTurnAction(game, name);
 		}
 		public GameServiceResponses ClaimCorner(Guid guid, int id, string name)
 		{
@@ -194,7 +205,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteClaimCornerAction(game, id, name);
+			return _gameActionHandler.ExecuteClaimCornerAction(game, id, name);
 		}
 		public GameServiceResponses ClaimEdge(Guid guid, int id, string name)
 		{
@@ -203,7 +214,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteClaimEdgeAction(game, id, name);
+			return _gameActionHandler.ExecuteClaimEdgeAction(game, id, name);
 		}
 		public GameServiceResponses ClaimInitialCorner(Guid guid, int id, string name)
 		{
@@ -212,7 +223,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteClaimInitialCornerAction(game, id, name);
+			return _gameActionHandler.ExecuteClaimInitialCornerAction(game, id, name);
 		}
 		public GameServiceResponses ClaimInitialRoad(Guid guid, int id, string name)
 		{
@@ -221,7 +232,8 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteClaimInitialEdgeAction(game, id, name);
+			var response = _gameActionHandler.ExecuteClaimInitialEdgeAction(game, id, name);
+			return response;
 		}
 		public GameServiceResponses MoveRobber(Guid guid, int id, string name)
 		{
@@ -230,7 +242,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteMoveRobberAction(game, id, name);
+			return _gameActionHandler.ExecuteMoveRobberAction(game, id, name);
 		}
 		public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer) // TODO  configolható lehessen tengeri városoknál a kereskedés aránya (1:2 vagy 1:3 akár)
 		{
@@ -239,7 +251,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteRegisterTradeOfferWithBankAction(game, offer);
+			return _gameActionHandler.ExecuteRegisterTradeOfferWithBankAction(game, offer);
 		}
 		public GameServiceResponses RegisterTradeOffer(Guid guid, TradeOffer offer)
 		{
@@ -248,7 +260,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteRegisterTradeOfferAction(game, offer);
+			return _gameActionHandler.ExecuteRegisterTradeOfferAction(game, offer);
 		}
 		public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name)
 		{
@@ -257,7 +269,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteAcceptTradeOfferAction(game, offer, name);
+			return _gameActionHandler.ExecuteAcceptTradeOfferAction(game, offer, name);
 		}
 		public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name) //TODO idk mit???
 		{
@@ -266,7 +278,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return gameActionHandler.ExecuteThrowResourcesAction(game, thrownResources, name);
+			return _gameActionHandler.ExecuteThrowResourcesAction(game, thrownResources, name);
 		}
 		public GameServiceResponses RollDices(Guid guid, string name)
         {
@@ -275,7 +287,7 @@ namespace BLL.Services.Implementations
             {
                 return GameServiceResponses.InvalidGame;
             }
-			return gameActionHandler.ExecuteDiceRollAction(game, name);
+			return _gameActionHandler.ExecuteDiceRollAction(game, name);
         }
     }
 }

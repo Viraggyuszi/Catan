@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace BLL.GameActions.EndTurnAction
 {
     public interface IEndTurnAction
-	{
-		public GameServiceResponses Execute(Game game, string name);
-	}
+    {
+        public GameServiceResponses Execute(Game game, string name);
+    }
 }

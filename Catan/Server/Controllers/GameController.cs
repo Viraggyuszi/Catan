@@ -1,5 +1,4 @@
-﻿using BLL.Implementations;
-using Catan.Shared.Model;
+﻿using Catan.Shared.Model;
 using Catan.Shared.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

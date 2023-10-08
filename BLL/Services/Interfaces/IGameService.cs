@@ -1,5 +1,6 @@
 ﻿using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
+using Catan.Shared.Model.GameState.Dice;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using System;
@@ -21,7 +22,8 @@ namespace BLL.Services.Interfaces
         public List<string>? GetPlayersConnectionIdWithSevenOrMoreResources(Guid guid);
         public string? GetActivePlayerConnectionId(Guid guid);
         public string? GetActivePlayerName(Guid guid);
-        public GameServiceResponses StartGame(Guid guid);
+		public List<DiceValue>? GetLastRolledDices(Guid guid);
+		public GameServiceResponses StartGame(Guid guid);
         public GameServiceResponses IsInitialRound(Guid guid);
         public GameServiceResponses EndPlayerTurn(Guid guid, string name);
         public GameServiceResponses ClaimInitialCorner(Guid guid, int id, string name);
@@ -40,5 +42,7 @@ namespace BLL.Services.Interfaces
         public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name);
 
         public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name);
-    }
+
+        
+	}
 }

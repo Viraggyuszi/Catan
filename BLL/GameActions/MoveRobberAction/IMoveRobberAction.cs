@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace BLL.GameActions.MoveRobberAction
 {
     public interface IMoveRobberAction
-	{
-		public GameServiceResponses Execute(Game game, int fieldId, string name);
-	}
+    {
+        public GameServiceResponses Execute(Game game, int fieldId, string name);
+    }
 }

@@ -1,7 +1,9 @@
 ﻿@page "/catan"
-@    using Microsoft.AspNetCore.SignalR.Client
-@    using System.Text.Json.Serialization;
-    using Catan.Shared.Model.GameMap;
+@using Catan.Shared.Model.GameState.Dice;
+@using Catan.Shared.Model.GameState;
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Text.Json.Serialization;
+@using Catan.Shared.Model.GameMap;
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 @inject IJSRuntime JS
@@ -540,15 +542,12 @@
 			StateHasChanged();
 		});
 
-		hubConnection!.On<int[]>("ProcessDiceRolled", rollResult =>
+		hubConnection!.On("ProcessDiceRolled", async () =>
 		{
-			var sum = (rollResult[0] + rollResult[1]).ToString();
-			dices[0] = rollResult[0];
-			dices[1] = rollResult[1];
-			if (ChatComponent is not null)
-			{
-				ChatComponent.SendDebugMessage("Result of the dice roll: " + sum);
-			}
+			var response = await hubConnection!.InvokeAsync<List<DiceValue>>("GetLatestRolledDices", Guid);
+			
+			dices[0] = DiceValue.IntFromDiceValue(response[0]);
+			dices[1] = DiceValue.IntFromDiceValue(response[1]);
 			StateHasChanged();
 		});
 		hubConnection!.On("DiceRolled", () =>

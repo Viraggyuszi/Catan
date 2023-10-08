@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace BLL.GameActions.ClaimInitialCornerAction
 {
     public interface IClaimInitialCornerAction
-	{
-		public GameServiceResponses Execute(Game game, int cornerId, string name);
-	}
+    {
+        public GameServiceResponses Execute(Game game, int cornerId, string name);
+    }
 }

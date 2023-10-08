@@ -13,7 +13,7 @@ using Catan.Shared.Response;
 using BLL.Services.Interfaces;
 using BLL.Services;
 using Catan.Shared.Model.GameState;
-using Catan.Shared.Model.GameState.Inventory;
+using Catan.Shared.Model.GameState.Dice;
 
 namespace Catan.Server.Hubs
 {
@@ -67,6 +67,11 @@ namespace Catan.Server.Hubs
 			await Clients.Caller.SendAsync("TurnEnded");
 			await CallNextPlayer(guid);
 		}
+		public List<DiceValue> GetLatestRolledDices(string guidstring)
+		{
+			Guid guid = Guid.Parse(guidstring);
+			return _gameService.GetLastRolledDices(guid) ?? throw new Exception("Dices are null");
+		}
 		public async Task RollDices(Actor actor, string guidstring)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
@@ -78,15 +83,22 @@ namespace Catan.Server.Hubs
 				throw new Exception("You can't roll dices during someone else's turn");
 			}
 			Guid guid = Guid.Parse(guidstring);
-			var dices = _gameService.RollDices(guid);
+			var response = _gameService.RollDices(guid, actor.Name); //TODO 
+
+			var dices = _gameService.GetLastRolledDices(guid);
 			if (dices is not null)
 			{
-				if (dices[0] + dices[1] == 7)
+				int sum = 0;
+				foreach (var dice in dices)
+				{
+					sum+=DiceValue.IntFromDiceValue(dice);
+				}
+				if (sum == 7)
 				{
 					ResolveDiceRollSeven(guid);
 				}
 				await Clients.Caller.SendAsync("DiceRolled");
-				await Clients.Group(guid.ToString()).SendAsync("ProcessDiceRolled", dices);
+				await Clients.Group(guid.ToString()).SendAsync("ProcessDiceRolled");
 				await Clients.Group(guid.ToString()).SendAsync("FetchResources");
 			}
 			else

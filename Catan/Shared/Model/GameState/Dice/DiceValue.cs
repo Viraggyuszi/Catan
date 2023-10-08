@@ -37,8 +37,7 @@ namespace Catan.Shared.Model.GameState.Dice
 			if (value == D6_4) return 4;
 			if (value == D6_5) return 5;
 			if (value == D6_6) return 6;
-			if (value == NULLDICE) return -1;
-			return -10000;
+			return 0;
 		}
 	}
 }

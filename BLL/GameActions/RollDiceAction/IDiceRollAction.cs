@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace BLL.GameActions.RollDiceAction
 {
-	public interface IDiceRollAction
-	{
-		public GameServiceResponses Execute(Game game, string name);
-	}
+    public interface IDiceRollAction
+    {
+        public GameServiceResponses Execute(Game game, string name);
+    }
 }
