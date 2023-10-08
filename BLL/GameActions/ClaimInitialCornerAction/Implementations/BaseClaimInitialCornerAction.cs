@@ -29,7 +29,7 @@ namespace BLL.GameActions.ClaimInitialCornerAction.Implementations
 			corner.Player = game.ActivePlayer;
 			corner.Level = 1;
 			game.ActivePlayer.Points++;
-			game.lastInitialVillageId = corner.Id;
+			game.LastInitialVillageId = corner.Id;
 			foreach (var edge in corner.Edges)
 			{
 				if (corner == edge.corners[0])

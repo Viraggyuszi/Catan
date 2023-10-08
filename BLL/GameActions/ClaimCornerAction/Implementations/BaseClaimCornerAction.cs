@@ -40,7 +40,7 @@ namespace BLL.GameActions.ClaimCornerAction.Implementations
 					if (game.ActivePlayer.Points >= 10)
 					{
 						game.GameOver = true;
-						game.Winner = new Player { Name = game.ActivePlayer.Name };
+						game.Winner = game.ActivePlayer;
 						return GameServiceResponses.GameOver;
 					}
 				}
@@ -64,7 +64,7 @@ namespace BLL.GameActions.ClaimCornerAction.Implementations
 			if (game.ActivePlayer.Points >= 10)
 			{
 				game.GameOver = true;
-				game.Winner = new Player { Name = game.ActivePlayer.Name };
+				game.Winner = game.ActivePlayer;
 			}
 			foreach (var edge in corner.Edges)
 			{

@@ -27,7 +27,7 @@ namespace BLL.Services.Implementations
         {
             _inMemoryDatabaseGame = inMemoryDatabaseGame;
             _mapService = mapService;
-            gameActionHandler = new GameActionHandler(); //Factory gyártsa nekünk ezt, megfelelő implementációkkal feltöltve!
+            //gameActionHandler = new GameActionHandler(); //Factory gyártsa nekünk ezt, megfelelő implementációkkal feltöltve!
         }
         public InMemoryDatabaseGameResponses RegisterGame(Guid guid, Game game)
         {

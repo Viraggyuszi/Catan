@@ -20,9 +20,9 @@ namespace Catan.Shared.Model
 		public bool AlreadyInitialized { get; set; } = false;
 		public bool ActivePlayerCanPlaceInitialVillage { get; set; } = false;
 		public bool ActivePlayerCanPlaceInitialRoad { get; set; } = false;
-		public int lastInitialVillageId { get; set; } = 0;
+		public int LastInitialVillageId { get; set; } = 0;
 		public bool GameOver { get; set; } = false;
-		public Player? Winner { get; set; }
+		public Player Winner { get; set; } = new Player();
 		public List<TradeOffer> TradeOfferList { get; set; } = new List<TradeOffer>();
 	}
 }
