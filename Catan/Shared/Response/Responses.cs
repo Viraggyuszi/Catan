@@ -53,6 +53,7 @@ namespace Catan.Shared.Response
         NotEnoughResourcesToAcceptTrade,
         BadResourceCountForTradingWithBank,
         NotEnoughResourceThrown,
-        InvalidResourcesHaveBeenThrown
+        InvalidResourcesHaveBeenThrown,
+        SuccessWithSevenRoll
 	}
 }

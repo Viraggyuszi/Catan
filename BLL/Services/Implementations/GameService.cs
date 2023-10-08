@@ -268,53 +268,14 @@ namespace BLL.Services.Implementations
 			}
 			return gameActionHandler.ExecuteThrowResourcesAction(game, thrownResources, name);
 		}
-
-
-		public int[]? RollDices(Guid guid)
+		public GameServiceResponses RollDices(Guid guid, string name)
         {
-            var dices = new int[2];
             var game = _inMemoryDatabaseGame.GetGame(guid);
             if (game is null)
             {
-                return null;
+                return GameServiceResponses.InvalidGame;
             }
-            int sum = 0;
-            for (int i = 0; i < dices.Length; i++)
-            {
-                dices[i] = new Random().Next(1, 7);
-                sum += dices[i];
-            }
-            if (sum == 7)
-            {
-                game.RobberNeedsMove = true;
-                game.ResolveResourceCount = true;
-                game.PlayersWithSevenOrMoreResources.Clear();
-                foreach (var player in game.PlayerList)
-                {
-                    if (player.Inventory.GetAllResourcesCount() >= 7)
-                    {
-                        game.PlayersWithSevenOrMoreResources.Add(player);
-                    }
-                }
-            }
-            else
-            {
-                foreach (var field in game.GameMap.FieldList)
-                {
-                    if (field.Number == sum && !field.IsRobbed)
-                    {
-                        foreach (var corner in field.Corners)
-                        {
-                            if (corner.Level > 0)
-                            {
-                                corner.Player.Inventory.AddResource(field.Type, corner.Level);
-                            }
-                        }
-                    }
-                }
-            }
-            return dices;
+			return gameActionHandler.ExecuteDiceRollAction(game, name);
         }
-
     }
 }

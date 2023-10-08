@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace Catan.Shared.Model.GameState.Dice.Implementations
 {
-	public class BaseDice : IDice<int>
+	public class BaseDice : IDice
 	{
-		private int _value;
-		public int Value => _value;
+		private DiceValue _value = DiceValue.NULLDICE;
+		public DiceValue Value => _value;
 
 		private int[] values = { 1, 2, 3, 4, 5, 6 };
-		public int RollDice()
+		public DiceValue RollDice()
 		{
 			int rIndex=new Random().Next(values.Length);
-			_value = values[rIndex];
-			return values[rIndex];
+			_value = DiceValue.DiceValueFromInt(values[rIndex]);
+			return _value;
 		}
 	}
 }

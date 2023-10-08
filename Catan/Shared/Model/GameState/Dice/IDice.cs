@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Catan.Shared.Model.GameState.Dice
 {
-	public interface IDice<T>
+	public interface IDice
 	{
-		public T Value { get; }
-		public T RollDice();
+		public DiceValue Value { get; }
+		public DiceValue RollDice();
 	}
 }

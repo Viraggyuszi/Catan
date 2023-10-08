@@ -7,6 +7,7 @@ using BLL.GameActions.EndTurnAction;
 using BLL.GameActions.MoveRobberAction;
 using BLL.GameActions.RegisterTradeOfferAction;
 using BLL.GameActions.RegisterTradeOfferWithBankAction;
+using BLL.GameActions.RollDiceAction;
 using BLL.GameActions.ThrowResourcesAction;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Response;
@@ -31,6 +32,7 @@ namespace BLL.GameActions
         private readonly IRegisterTradeOfferAction _registerTradeOfferAction;
         private readonly IAcceptTradeOfferAction _acceptTradeOfferAction;
         private readonly IThrowResourcesAction _throwResourcesAction;
+        private readonly IDiceRollAction _diceRollAction;
 
 		public GameActionHandler()
         {
@@ -75,6 +77,10 @@ namespace BLL.GameActions
         public GameServiceResponses ExecuteThrowResourcesAction(Game game, Inventory thrownResources, string name)
         {
             return _throwResourcesAction.Execute(game, thrownResources, name);
+        }
+        public GameServiceResponses ExecuteDiceRollAction(Game game, string name)
+        {
+            return _diceRollAction.Execute(game, name);
         }
 	}
 }

@@ -1,6 +1,5 @@
 ﻿using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
-using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using System;
@@ -18,7 +17,7 @@ namespace BLL.Services.Interfaces
         public InMemoryDatabaseGameResponses RegisterGame(Guid guid, Game game);
         public Map? GetGameMap(Guid guid);
         public GameServiceResponses RegisterPlayerConnectionId(Guid guid, string name, string connectionId);
-        public int[]? RollDices(Guid guid);
+        public GameServiceResponses RollDices(Guid guid, string name);
         public List<string>? GetPlayersConnectionIdWithSevenOrMoreResources(Guid guid);
         public string? GetActivePlayerConnectionId(Guid guid);
         public string? GetActivePlayerName(Guid guid);
