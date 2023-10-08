@@ -12,6 +12,8 @@ using System.IdentityModel.Tokens.Jwt;
 using Catan.Shared.Response;
 using BLL.Services.Interfaces;
 using BLL.Services;
+using Catan.Shared.Model.GameState;
+using Catan.Shared.Model.GameState.Inventory;
 
 namespace Catan.Server.Hubs
 {

@@ -1,4 +1,4 @@
-﻿using Catan.Shared.Model;
+﻿using Catan.Shared.Model.GameMap;
 using System;
 using System.Collections.Generic;
 using System.Linq;

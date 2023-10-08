@@ -1,4 +1,4 @@
-﻿using Catan.Shared.Model;
+﻿using Catan.Shared.Model.GameState;
 using Catan.Shared.Response;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BLL.GameActions.ClaimCornerAction
 {
-	public interface IClaimCornerAction
+    public interface IClaimCornerAction
 	{
 		public GameServiceResponses Execute(Game game, int cornerId, string name);
 	}

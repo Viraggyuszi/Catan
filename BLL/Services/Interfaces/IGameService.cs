@@ -1,4 +1,6 @@
-﻿using Catan.Shared.Model;
+﻿using Catan.Shared.Model.GameMap;
+using Catan.Shared.Model.GameState;
+using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using System;

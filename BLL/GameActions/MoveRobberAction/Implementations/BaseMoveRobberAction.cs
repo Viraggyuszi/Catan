@@ -1,4 +1,5 @@
-﻿using Catan.Shared.Model;
+﻿using Catan.Shared.Model.GameMap;
+using Catan.Shared.Model.GameState;
 using Catan.Shared.Response;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BLL.GameActions.MoveRobberAction.Implementations
 {
-	public class BaseMoveRobberAction : IMoveRobberAction
+    public class BaseMoveRobberAction : IMoveRobberAction
 	{
 		public GameServiceResponses Execute(Game game, int fieldId, string name)
 		{

@@ -1,8 +1,8 @@
-﻿using Catan.Shared.Model;
+﻿using Catan.Shared.Model.GameMap;
 
 namespace Catan.Client.ViewModels
 {
-	public class Hexagon
+    public class Hexagon
 	{
 		public double Radius { get; set; }
 		public Vertex Base { get; set; }

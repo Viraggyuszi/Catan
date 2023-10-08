@@ -8,7 +8,7 @@ using BLL.GameActions.MoveRobberAction;
 using BLL.GameActions.RegisterTradeOfferAction;
 using BLL.GameActions.RegisterTradeOfferWithBankAction;
 using BLL.GameActions.ThrowResourcesAction;
-using Catan.Shared.Model;
+using Catan.Shared.Model.GameState;
 using Catan.Shared.Response;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace BLL.GameActions
 {
-	public class GameActionHandler
+    public class GameActionHandler
 	{
         private readonly IClaimCornerAction _claimCornerAction;
         private readonly IClaimEdgeAction _claimEdgeAction;

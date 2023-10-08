@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Catan.Shared.Model
+namespace Catan.Shared.Model.GameState
 {
-	public class Player
-	{
-		public string? Name { get; set; } //TOOD refactor proper ctor for non-nullable properties
-		public string? Color { get; set; }
-		public int? Points { get; set; }
+    public class Player
+    {
+        public string? Name { get; set; } //TOOD refactor proper ctor for non-nullable properties
+        public string? Color { get; set; }
+        public int? Points { get; set; }
         public PlayerInventory Inventory { get; set; }
 
         public string? ConnectionID { get; set; }
@@ -21,7 +21,7 @@ namespace Catan.Shared.Model
         }
         public Player(Player player)
         {
-            Inventory=new PlayerInventory();
+            Inventory = new PlayerInventory();
             Name = player.Name;
             Color = player.Color;
             Points = player.Points;

@@ -1,4 +1,4 @@
-﻿using Catan.Shared.Model;
+﻿using Catan.Shared.Model.GameMap;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Catan.Shared.Request
 {
-	public class FetchInventoryDTO
+    public class FetchInventoryDTO
 	{
 		public Dictionary<Resources,int> Inventory { get; set; }
 		public Dictionary<string,int> OthersInventory { get; set; }

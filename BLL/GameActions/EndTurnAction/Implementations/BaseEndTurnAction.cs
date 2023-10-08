@@ -1,4 +1,4 @@
-﻿using Catan.Shared.Model;
+﻿using Catan.Shared.Model.GameState;
 using Catan.Shared.Response;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BLL.GameActions.EndTurnAction.Implementations
 {
-	public class BaseEndTurnAction : IEndTurnAction
+    public class BaseEndTurnAction : IEndTurnAction
 	{
 		public GameServiceResponses Execute(Game game, string name)
 		{

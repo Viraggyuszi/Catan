@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Catan.Shared.Model
+namespace Catan.Shared.Model.GameMap
 {
-    public enum Resources
+    public enum TerrainType
     {
-        Wood,Ore,Wheat,Sheep,Brick
+        Forest, Mountains, Cropfield, Grassland, Quarry, Desert, Sea
     }
-    
 }

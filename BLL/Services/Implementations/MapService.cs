@@ -1,5 +1,5 @@
 ﻿using BLL.Services.Interfaces;
-using Catan.Shared.Model;
+using Catan.Shared.Model.GameMap;
 
 namespace BLL.Services.Implementations
 {

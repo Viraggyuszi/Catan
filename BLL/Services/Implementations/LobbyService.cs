@@ -1,5 +1,5 @@
 ﻿using BLL.Services.Interfaces;
-using Catan.Shared.Model;
+using Catan.Shared.Model.GameState;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using System;

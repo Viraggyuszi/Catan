@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Catan.Shared.Model
+namespace Catan.Shared.Model.GameState
 {
-	public class TradeOffer //TODO elkülöníteni a cserét a bankkal és a játékosokkal!
-	{
-		public Player Owner { get; set; }
-		public Inventory OwnerOffer { get; set; }
-		public Inventory TargetOffer { get; set; }
+    public class TradeOffer //TODO elkülöníteni a cserét a bankkal és a játékosokkal!
+    {
+        public Player Owner { get; set; }
+        public Inventory OwnerOffer { get; set; }
+        public Inventory TargetOffer { get; set; }
         public bool ToPlayers { get; set; } = true;
         public TradeOffer(Player creator, Inventory ownerOffer, Inventory targetOffer)
         {

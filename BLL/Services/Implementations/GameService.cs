@@ -1,6 +1,7 @@
 ﻿using BLL.GameActions;
 using BLL.Services.Interfaces;
-using Catan.Shared.Model;
+using Catan.Shared.Model.GameMap;
+using Catan.Shared.Model.GameState;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
