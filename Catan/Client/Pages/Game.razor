@@ -544,10 +544,13 @@
 
 		hubConnection!.On("ProcessDiceRolled", async () =>
 		{
-			var response = await hubConnection!.InvokeAsync<List<DiceValue>>("GetLatestRolledDices", Guid);
-			
-			dices[0] = DiceValue.IntFromDiceValue(response[0]);
-			dices[1] = DiceValue.IntFromDiceValue(response[1]);
+			var response = await hubConnection!.InvokeAsync<int[]>("GetLatestRolledBaseDices", Guid);
+			if (response is null)
+			{
+				throw new Exception("WTF");
+			}
+			dices[0] = response[0];
+			dices[1] = response[1];
 			StateHasChanged();
 		});
 		hubConnection!.On("DiceRolled", () =>

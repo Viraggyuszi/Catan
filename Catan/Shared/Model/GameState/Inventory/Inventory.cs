@@ -26,7 +26,7 @@ namespace Catan.Shared.Model.GameState
             switch (terrainType)
             {
                 case TerrainType.Desert:
-                    throw new Exception("why does desert have a number?");
+                    break;
                 case TerrainType.Forest:
                     inventory[Resources.Wood] += count;
                     break;

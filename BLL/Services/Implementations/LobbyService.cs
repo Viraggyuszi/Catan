@@ -1,5 +1,7 @@
 ﻿using BLL.Services.Interfaces;
+using Catan.Shared.Model;
 using Catan.Shared.Model.GameState;
+using Catan.Shared.Model.GameState.Dice.Implementations;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using System;
@@ -49,6 +51,9 @@ namespace BLL.Services.Implementations
             {
                 return InMemoryDatabaseGameResponses.CreateGameFailed;
             }
+            game.GameType = GameType.Base;
+            game.Dices.Add(new BaseDice());
+            game.Dices.Add(new BaseDice());
             var response = _gameService.RegisterGame(guid, game);
             if (response == InMemoryDatabaseGameResponses.Success)
             {

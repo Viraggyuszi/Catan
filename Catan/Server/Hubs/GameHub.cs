@@ -14,6 +14,7 @@ using BLL.Services.Interfaces;
 using BLL.Services;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
+using Newtonsoft.Json.Linq;
 
 namespace Catan.Server.Hubs
 {
@@ -67,10 +68,24 @@ namespace Catan.Server.Hubs
 			await Clients.Caller.SendAsync("TurnEnded");
 			await CallNextPlayer(guid);
 		}
-		public List<DiceValue> GetLatestRolledDices(string guidstring)
+		public int[] GetLatestRolledBaseDices(string guidstring)
 		{
 			Guid guid = Guid.Parse(guidstring);
-			return _gameService.GetLastRolledDices(guid) ?? throw new Exception("Dices are null");
+			var dices= _gameService.GetLastRolledDices(guid);
+			if (dices is null)
+			{
+				throw new Exception("null");
+			}
+			List<int> res = new List<int>();
+			foreach (var dice in dices)
+			{
+				var value = DiceValue.IntFromDiceValue(dice);
+				if (value>0)
+				{
+					res.Add(value);
+				}
+			}
+			return res.ToArray();
 		}
 		public async Task RollDices(Actor actor, string guidstring)
 		{

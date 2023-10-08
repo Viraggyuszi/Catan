@@ -27,6 +27,7 @@ namespace Catan.Shared.Model.GameState
         public Player Winner { get; set; } = new Player();
         public List<TradeOffer> TradeOfferList { get; set; } = new List<TradeOffer>();
 
+        public GameType GameType { get; set; }
         public List<IDice> Dices { get; set; } = new List<IDice>();
         public List<DiceValue> LastRolledValues { get; set; } = new List<DiceValue>();
     }

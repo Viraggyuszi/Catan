@@ -4,20 +4,7 @@ using Catan.Shared.Model;
 using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
-using Catan.Shared.Request;
 using Catan.Shared.Response;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
-using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BLL.Services.Implementations
 {
