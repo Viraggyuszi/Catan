@@ -8,7 +8,8 @@ namespace Catan.Shared.Model.GameState.Dice
 {
 	public interface IDice
 	{
-		public DiceValue Value { get; }
-		public DiceValue RollDice();
+		public Type DiceType { get; }
+		public object Value { get; }
+		public object RollDice();
 	}
 }

@@ -100,7 +100,7 @@ namespace BLL.Services.MapGenerator.Implementations
 			for (int i = 6; i > 3; i--)
 			{
 				int j = fieldLists[i].Count - 1;
-				for (; j > 1; j--)
+				for (; j > 0; j--)
 				{
 					MakeConnectionBetweenFields(fieldLists[i][j], fieldLists[i][j - 1], 2);
 					MakeConnectionBetweenFields(fieldLists[i][j], fieldLists[i - 1][j], 3);

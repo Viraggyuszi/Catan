@@ -100,14 +100,14 @@ namespace BLL.Services.Implementations
 			}
 			return game.ActivePlayer.Name;
 		}
-		public List<DiceValue>? GetLastRolledDices(Guid guid)
+		public List<IDice>? GetLastRolledDices(Guid guid)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return null;
 			}
-			return game.LastRolledValues;
+			return game.Dices;
 		}
 		public GameServiceResponses IsInitialRound(Guid guid)
 		{
