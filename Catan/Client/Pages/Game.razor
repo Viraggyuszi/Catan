@@ -82,38 +82,43 @@
 					<defs>
 						@foreach (var hexagon in hexagons)
 						{
-							var x = hexagon.Base.X + hexagonSize * Math.Sqrt(3) - 75.5;
+							var x = hexagon.Base.X + hexagonSize * Math.Sqrt(3) - 60.4;
 							var y = hexagon.Base.Y + hexagonSize - 1;
 							switch (hexagon.Field.Type)
 							{
 								case TerrainType.Desert:
 									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="202" height="202" xlink:href="/images/tiles/desert.png"></image>
+										<image width="162" height="162" xlink:href="/images/tiles/desert.png"></image>
 									</pattern>
 									break;
 								case TerrainType.Cropfield:
 									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="202" height="202" xlink:href="/images/tiles/wheat.png"></image>
+										<image width="162" height="162" xlink:href="/images/tiles/wheat.png"></image>
 									</pattern>
 									break;
 								case TerrainType.Forest:
 									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="202" height="202" xlink:href="/images/tiles/forest.png"></image>
+										<image width="162" height="162" xlink:href="/images/tiles/forest.png"></image>
 									</pattern>
 									break;
 								case TerrainType.Mountains:
 									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="202" height="202" xlink:href="/images/tiles/mountains.png"></image>
+										<image width="162" height="162" xlink:href="/images/tiles/mountains.png"></image>
 									</pattern>
 									break;
 								case TerrainType.Quarry:
 									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="202" height="202" xlink:href="/images/tiles/quarry.png"></image>
+										<image width="162" height="162" xlink:href="/images/tiles/quarry.png"></image>
 									</pattern>
 									break;
 								case TerrainType.Grassland:
 									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="202" height="202" xlink:href="/images/tiles/grassland.png"></image>
+										<image width="162" height="162" xlink:href="/images/tiles/grassland.png"></image>
+									</pattern>
+									break;
+								case TerrainType.Sea:
+									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+										<image width="162" height="162" xlink:href="/images/tiles/sea2.png"></image>
 									</pattern>
 									break;
 							}
@@ -125,7 +130,7 @@
 					{
 						<polygon points=@hexagon.VerticesToString() fill="url('#@hexagons.IndexOf(hexagon)')" 
 								@onclick="()=>ClickOnHexagon(hexagon.Field.Id)" stroke="black" stroke-width="1"></polygon>
-						@if (hexagon.Field.Type != TerrainType.Desert)
+						@if (hexagon.Field.Type != TerrainType.Desert && hexagon.Field.Type != TerrainType.Sea)
 						{
 							<circle cx="@DoubleToString(hexagon.Base.X)" cy="@DoubleToString(hexagon.Base.Y)" r="25" fill="beige" />
 							<text>
@@ -291,7 +296,7 @@
 
 	List<EdgeLine> edgeLines = new List<EdgeLine>();
 
-	private int hexagonSize = 100;
+	private int hexagonSize = 80;
 	private int hexagonStartingX = 280;
 	private int hexagonStartingY = 140;
 
@@ -413,25 +418,33 @@
 	}
 	private void CreateHexagonMap(List<Field> fields)
 	{
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			hexagons.Add(new Hexagon(hexagonStartingX + i * hexagonSize * Math.Sqrt(3), hexagonStartingY, hexagonSize, fields[i]));
 		}
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 5; i++)
 		{
-			hexagons.Add(new Hexagon(hexagons[0].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[0].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 3]));
+			hexagons.Add(new Hexagon(hexagons[0].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[0].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 4]));
+		}
+		for (int i = 0; i < 6; i++)
+		{
+			hexagons.Add(new Hexagon(hexagons[4].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[4].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 9]));
+		}
+		for (int i = 0; i < 7; i++)
+		{
+			hexagons.Add(new Hexagon(hexagons[9].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[9].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 15]));
+		}
+		for (int i = 0; i < 6; i++)
+		{
+			hexagons.Add(new Hexagon(hexagons[15].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[15].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 22]));
 		}
 		for (int i = 0; i < 5; i++)
 		{
-			hexagons.Add(new Hexagon(hexagons[3].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[3].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 7]));
+			hexagons.Add(new Hexagon(hexagons[22].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[22].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 28]));
 		}
 		for (int i = 0; i < 4; i++)
 		{
-			hexagons.Add(new Hexagon(hexagons[7].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[7].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 12]));
-		}
-		for (int i = 0; i < 3; i++)
-		{
-			hexagons.Add(new Hexagon(hexagons[12].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[12].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 16]));
+			hexagons.Add(new Hexagon(hexagons[28].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[28].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 33]));
 		}
 	}
 	private void CreateHexagonEdges()

@@ -1,5 +1,7 @@
 ﻿using BLL.Services.Implementations;
 using BLL.Services.Interfaces;
+using BLL.Services.MapServices;
+using BLL.Services.MapServices.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BLL

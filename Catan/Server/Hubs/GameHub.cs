@@ -169,7 +169,7 @@ namespace Catan.Server.Hubs
 			var options = new JsonSerializerOptions
 			{
 				MaxDepth = 1000,
-				ReferenceHandler = ReferenceHandler.Preserve,
+				ReferenceHandler = ReferenceHandler.IgnoreCycles,
 				IncludeFields=true
 			};
 			string res= JsonSerializer.Serialize(map, options);

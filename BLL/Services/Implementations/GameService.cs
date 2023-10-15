@@ -1,5 +1,6 @@
 ﻿using BLL.GameActions;
 using BLL.Services.Interfaces;
+using BLL.Services.MapServices;
 using Catan.Shared.Model;
 using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
@@ -21,7 +22,7 @@ namespace BLL.Services.Implementations
         }
         public InMemoryDatabaseGameResponses RegisterGame(Guid guid, Game game)
         {
-            var newMap = _mapService.GenerateMap();
+            var newMap = _mapService.GenerateMap(GameType.Base); //TODO átadni paraméterként
             game.GameMap = newMap;
             return _inMemoryDatabaseGame.AddGame(guid, game);
         }

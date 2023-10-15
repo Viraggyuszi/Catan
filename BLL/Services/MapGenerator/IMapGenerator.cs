@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.Services.Interfaces
+namespace BLL.Services.MapGenerator
 {
-    public interface IMapService
+    public interface IMapGenerator
     {
         public Map GenerateMap();
     }

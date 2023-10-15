@@ -51,9 +51,13 @@ namespace BLL.Services.Implementations
             {
                 return InMemoryDatabaseGameResponses.CreateGameFailed;
             }
-            game.GameType = GameType.Base;
+
+
+            game.GameType = GameType.Base; //TODO
             game.Dices.Add(new BaseDice());
             game.Dices.Add(new BaseDice());
+
+
             var response = _gameService.RegisterGame(guid, game);
             if (response == InMemoryDatabaseGameResponses.Success)
             {
