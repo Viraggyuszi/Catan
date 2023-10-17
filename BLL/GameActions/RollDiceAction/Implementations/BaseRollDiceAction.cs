@@ -19,12 +19,10 @@ namespace BLL.GameActions.RollDiceAction.Implementations
                 return GameServiceResponses.InvalidMember;
             }
             int sum = 0;
-            game.LastRolledValues.Clear();
             foreach (var dice in game.Dices)
             {
                 var value = dice.RollDice();
-                game.LastRolledValues.Add(value);
-                sum += DiceValue.IntFromDiceValue(value);
+                sum += Convert.ToInt32(value);
             }
             if (sum == 7)
             {

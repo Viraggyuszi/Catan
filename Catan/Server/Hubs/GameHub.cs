@@ -79,10 +79,9 @@ namespace Catan.Server.Hubs
 			List<int> res = new List<int>();
 			foreach (var dice in dices)
 			{
-				var value = DiceValue.IntFromDiceValue(dice);
-				if (value>0)
+				if (dice.DiceType == typeof(int))
 				{
-					res.Add(value);
+					res.Add(Convert.ToInt32(dice.Value));
 				}
 			}
 			return res.ToArray();
@@ -100,13 +99,13 @@ namespace Catan.Server.Hubs
 			Guid guid = Guid.Parse(guidstring);
 			var response = _gameService.RollDices(guid, actor.Name); //TODO 
 
-			var dices = _gameService.GetLastRolledDices(guid);
+			var dices = GetLatestRolledBaseDices(guidstring);
 			if (dices is not null)
 			{
 				int sum = 0;
 				foreach (var dice in dices)
 				{
-					sum+=DiceValue.IntFromDiceValue(dice);
+					sum += dice;
 				}
 				if (sum == 7)
 				{
@@ -169,7 +168,7 @@ namespace Catan.Server.Hubs
 			var options = new JsonSerializerOptions
 			{
 				MaxDepth = 1000,
-				ReferenceHandler = ReferenceHandler.Preserve,
+				ReferenceHandler = ReferenceHandler.IgnoreCycles,
 				IncludeFields=true
 			};
 			string res= JsonSerializer.Serialize(map, options);

@@ -12,8 +12,8 @@ namespace Catan.Shared.Model.GameMap
     {
         public int Id { get; set; }
         public Player Owner { get; set; } = new Player();
-
-        public Corner[] corners { get; set; } = new Corner[2];
+		[JsonIgnore]
+		public Corner[] corners { get; set; } = new Corner[2];
 
         public override string ToString()
         {

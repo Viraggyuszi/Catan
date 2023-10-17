@@ -1,9 +1,14 @@
-﻿using BLL.Services.Interfaces;
+﻿using BLL.Services.MapGenerator;
 using Catan.Shared.Model.GameMap;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace BLL.Services.Implementations
+namespace BLL.Services.MapGenerator.Implementations
 {
-    public class MapService : IMapService
+    public class BaseMapGenerator : IMapGenerator
     {
         public Map GenerateMap()
         {
@@ -249,6 +254,5 @@ namespace BLL.Services.Implementations
                 field.Id = Id++;
             }
         }
-
     }
 }

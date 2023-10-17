@@ -22,7 +22,7 @@ namespace BLL.Services.Interfaces
         public List<string>? GetPlayersConnectionIdWithSevenOrMoreResources(Guid guid);
         public string? GetActivePlayerConnectionId(Guid guid);
         public string? GetActivePlayerName(Guid guid);
-		public List<DiceValue>? GetLastRolledDices(Guid guid);
+		public List<IDice>? GetLastRolledDices(Guid guid);
 		public GameServiceResponses StartGame(Guid guid);
         public GameServiceResponses IsInitialRound(Guid guid);
         public GameServiceResponses EndPlayerTurn(Guid guid, string name);

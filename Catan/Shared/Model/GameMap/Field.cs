@@ -13,8 +13,8 @@ namespace Catan.Shared.Model.GameMap
         public int Number { get; set; }
         public TerrainType Type { get; set; }
         public bool IsRobbed { get; set; }
-
-        public Field[] Neighbours { get; set; } = new Field[6];
+		[JsonIgnore]
+		public Field[] Neighbours { get; set; } = new Field[6];
         public Edge[] Edges { get; set; } = new Edge[6];
         public Corner[] Corners { get; set; } = new Corner[6];
 
