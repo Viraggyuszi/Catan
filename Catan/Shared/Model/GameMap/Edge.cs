@@ -13,11 +13,11 @@ namespace Catan.Shared.Model.GameMap
         public int Id { get; set; }
         public Player Owner { get; set; } = new Player();
 		[JsonIgnore]
-		public Corner[] corners { get; set; } = new Corner[2];
-
+		public Corner[] Corners { get; set; } = new Corner[2];
+        public EdgeType EdgeType { get; set; } = EdgeType.Road;
         public override string ToString()
         {
-            return "sarkok: " + corners[0].Id + " ; " + corners[1].Id;
+            return "sarkok: " + Corners[0].Id + " ; " + Corners[1].Id;
         }
     }
 }

@@ -26,6 +26,10 @@ namespace BLL.GameActions.ClaimCornerAction.Implementations
             {
                 return GameServiceResponses.InvalidCorner;
             }
+            if (corner.Fields.All(f=>f.Type==Catan.Shared.Model.GameMap.TerrainType.Sea))
+            {
+				return GameServiceResponses.CantPlaceCornerToSea;
+			}
             var inventory = game.ActivePlayer.Inventory;
             if (corner.Player.Name == name && corner.Level == 1)
             {
@@ -69,13 +73,13 @@ namespace BLL.GameActions.ClaimCornerAction.Implementations
             }
             foreach (var edge in corner.Edges)
             {
-                if (corner == edge.corners[0])
+                if (corner == edge.Corners[0])
                 {
-                    edge.corners[1].Level = -1;
+                    edge.Corners[1].Level = -1;
                 }
                 else
                 {
-                    edge.corners[0].Level = -1;
+                    edge.Corners[0].Level = -1;
                 }
             }
             return GameServiceResponses.Success;

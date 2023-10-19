@@ -45,6 +45,8 @@ namespace Catan.Shared.Response
         NotEnoughResourcesForVillage,
         NotEnoughResourcesForUpgrade,
         CantPlaceCornerWithoutPath,
+        CantPlaceCornerToSea,
+        CantPlaceEdgeToSea,
         SomeHowTheRobberIsMissing,
         GameOver,
         GameInProgress,

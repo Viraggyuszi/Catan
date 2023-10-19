@@ -11,7 +11,7 @@ namespace BLL.Services.MapGenerator.Implementations
 	{
 		public Map GenerateMap()
 		{
-			Map map = new Map();
+			var map = new Map();
 			map.EdgeList.Clear();
 			map.FieldList.Clear();
 			map.CornerList.Clear();
@@ -23,9 +23,28 @@ namespace BLL.Services.MapGenerator.Implementations
 			ResolveNeighboursEdges(map);
 
 			GenerateIds(map);
-
+			DisableUnavailableCornersAndEdges(map);
 			return map;
 		}
+
+		private void DisableUnavailableCornersAndEdges(Map map)
+		{
+			foreach (var edge in map.EdgeList)
+			{
+				if (edge.Corners.Any(c => c.Fields.All(f => f.Type == TerrainType.Sea)))
+				{
+					edge.EdgeType = EdgeType.Unavailable;
+				}
+			}
+			foreach (var corner in map.CornerList)
+			{
+				if (corner.Fields.All(f => f.Type == TerrainType.Sea))
+				{
+					corner.Level = -1;
+				}
+			}
+		}
+
 		private Field CreateFieldWithNumberAndTerrain(List<int> numbersList, List<TerrainType> terrains, int index)
 		{
 			Field field = new Field();
@@ -220,8 +239,8 @@ namespace BLL.Services.MapGenerator.Implementations
 					Edge edge = new Edge();
 					field.Corners[i].Edges.Add(edge);
 					field.Corners[(i + 1) % 6].Edges.Add(edge);
-					edge.corners[0] = field.Corners[i];
-					edge.corners[1] = field.Corners[(i + 1) % 6];
+					edge.Corners[0] = field.Corners[i];
+					edge.Corners[1] = field.Corners[(i + 1) % 6];
 					edge.Id = id++;
 					field.Edges[i] = edge;
 					map.EdgeList.Add(edge);
@@ -239,8 +258,8 @@ namespace BLL.Services.MapGenerator.Implementations
 						if (field.Edges[j] != field.Neighbours[j].Edges[(j + 3) % 6])
 						{
 							Edge mergedEdge = new Edge();
-							mergedEdge.corners[0] = field.Corners[j];
-							mergedEdge.corners[1] = field.Corners[(j + 1) % 6];
+							mergedEdge.Corners[0] = field.Corners[j];
+							mergedEdge.Corners[1] = field.Corners[(j + 1) % 6];
 							mergedEdge.Id = field.Edges[j].Id;
 							map.EdgeList.Remove(field.Edges[j]);
 							map.EdgeList.Remove(field.Neighbours[j].Edges[(j + 3) % 6]);

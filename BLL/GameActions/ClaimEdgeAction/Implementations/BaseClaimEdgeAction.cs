@@ -26,6 +26,10 @@ namespace BLL.GameActions.ClaimEdgeAction.Implementations
             {
                 return GameServiceResponses.InvalidEdge;
             }
+            if (edge.Corners.Any(c=>c.Fields.All(f=>f.Type==Catan.Shared.Model.GameMap.TerrainType.Sea)))
+            {
+                return GameServiceResponses.CantPlaceEdgeToSea;
+            }
             if (edge.Owner.Name is not null)
             {
                 return GameServiceResponses.EdgeAlreadyTaken;
@@ -35,10 +39,10 @@ namespace BLL.GameActions.ClaimEdgeAction.Implementations
             {
                 return GameServiceResponses.NotEnoughResourcesForRoad;
             }
-            if (edge.corners[0].Player.Name != name && edge.corners[1].Player.Name != name)
+            if (edge.Corners[0].Player.Name != name && edge.Corners[1].Player.Name != name)
             {
-                var corner1 = edge.corners[0];
-                var corner2 = edge.corners[1];
+                var corner1 = edge.Corners[0];
+                var corner2 = edge.Corners[1];
                 if (!corner1.Edges.Any(e => e.Owner.Name == name) && !corner2.Edges.Any(e => e.Owner.Name == name))
                 {
                     return GameServiceResponses.CantPlaceCornerWithoutPath;

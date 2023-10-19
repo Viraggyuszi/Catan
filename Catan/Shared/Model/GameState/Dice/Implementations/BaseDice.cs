@@ -11,7 +11,7 @@ namespace Catan.Shared.Model.GameState.Dice.Implementations
 	{
 
 		private int _value;
-		private int[] values = { 1, 2, 3, 4, 5, 6 };
+		private readonly int[] values = { 1, 2, 3, 4, 5, 6 };
 		public object Value => _value;
 
 		public Type DiceType { get => typeof(int); }
