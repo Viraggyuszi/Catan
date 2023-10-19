@@ -26,7 +26,7 @@ namespace BLL.GameActions.ClaimInitialEdgeAction.Implementations
             {
                 return GameServiceResponses.EdgeAlreadyTaken;
             }
-            if (edge.corners[0].Id != game.LastInitialVillageId && edge.corners[1].Id != game.LastInitialVillageId)
+            if (edge.Corners[0].Id != game.LastInitialVillageId && edge.Corners[1].Id != game.LastInitialVillageId)
             {
                 return GameServiceResponses.InitialRoadNotPlacedCorrectly;
             }
