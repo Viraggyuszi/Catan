@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.GameActions.ClaimCornerAction
+namespace BLL.GameActions.BuildVillageAction
 {
-    public interface IClaimCornerAction
-    {
-        public GameServiceResponses Execute(Game game, int cornerId, string name);
-    }
+	public interface IBuildVillageAction
+	{
+		public GameServiceResponses Execute(Game game, int cornerId, string name);
+	}
 }

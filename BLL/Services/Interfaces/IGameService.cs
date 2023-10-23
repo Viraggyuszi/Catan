@@ -26,10 +26,11 @@ namespace BLL.Services.Interfaces
 		public GameServiceResponses StartGame(Guid guid);
         public GameServiceResponses IsInitialRound(Guid guid);
         public GameServiceResponses EndPlayerTurn(Guid guid, string name);
-        public GameServiceResponses ClaimInitialCorner(Guid guid, int id, string name);
-        public GameServiceResponses ClaimInitialRoad(Guid guid, int id, string name);
-        public GameServiceResponses ClaimCorner(Guid guid, int id, string name);
-        public GameServiceResponses ClaimEdge(Guid guid, int id, string name);
+        public GameServiceResponses BuildInitialVillage(Guid guid, int id, string name);
+        public GameServiceResponses BuildInitialRoad(Guid guid, int id, string name);
+        public GameServiceResponses BuildVillage(Guid guid, int id, string name);
+        public GameServiceResponses BuildCity(Guid guid, int id, string name);
+		public GameServiceResponses BuildRoad(Guid guid, int id, string name);
         public Dictionary<Resources, int>? GetPlayersInventory(Guid guid, string name);
         public Dictionary<string, int>? GetOtherPlayersInventory(Guid guid, string name);
         public GameServiceResponses IsGameOver(Guid guid);

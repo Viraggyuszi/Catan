@@ -224,7 +224,7 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					var response = _gameService.ClaimInitialCorner(guid, id, actor.Name); //TODO
+					var response = _gameService.BuildInitialVillage(guid, id, actor.Name); //TODO
                     await NotifyMapChanged(guid);
 					await NotifyClients(guid);
 					await Clients.Caller.SendAsync("PlaceInitialRoad");
@@ -255,7 +255,7 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					var response = _gameService.ClaimInitialRoad(guid, id, actor.Name); //TODO
+					var response = _gameService.BuildInitialRoad(guid, id, actor.Name); //TODO
                     await NotifyMapChanged(guid);
 					await Clients.Caller.SendAsync("InitialTurnDone");
 				}
@@ -299,7 +299,7 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					var response = _gameService.ClaimCorner(guid, id, actor.Name); //TODO
+					var response = _gameService.BuildVillage(guid, id, actor.Name); //TODO
 					await NotifyMapChanged(guid);
 					await NotifyClients(guid);
 				}
@@ -329,7 +329,7 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					var response = _gameService.ClaimEdge(guid, id, actor.Name); //TODO
+					var response = _gameService.BuildRoad(guid, id, actor.Name); //TODO
 					await NotifyMapChanged(guid);
 					await NotifyClients(guid);
 				}

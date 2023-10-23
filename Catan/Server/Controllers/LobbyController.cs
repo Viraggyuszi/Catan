@@ -30,7 +30,7 @@ namespace Catan.Server.Controllers
 			{
 				throw new Exception("Using other player's name");
 			}
-			var lobby= _lobbyService.CreateLobby(playerLobbyDTO.Lobby!.Name!);
+			var lobby= _lobbyService.CreateLobby(playerLobbyDTO.Lobby!.Name!,playerLobbyDTO.DLCs);
             return new ApiDTO<InMemoryDatabaseLobbyResponses>() { Success = lobby == InMemoryDatabaseLobbyResponses.Success, Value = lobby }; //TODO kezelni kliensoldalon
         }
 

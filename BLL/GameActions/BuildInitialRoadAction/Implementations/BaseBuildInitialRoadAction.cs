@@ -1,4 +1,4 @@
-﻿using BLL.GameActions.ClaimInitialEdgeAction;
+﻿using BLL.GameActions.BuildInitialRoadAction;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Response;
 using System;
@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.GameActions.ClaimInitialEdgeAction.Implementations
+namespace BLL.GameActions.BuildInitialRoadAction.Implementations
 {
-    public class BaseClaimInitialEdgeAction : IClaimInitialEdgeAction
+    public class BaseBuildInitialRoadAction : IBuildInitialRoadAction
     {
         public GameServiceResponses Execute(Game game, int edgeId, string name)
         {

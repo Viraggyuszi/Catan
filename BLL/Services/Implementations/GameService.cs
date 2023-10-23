@@ -13,17 +13,20 @@ namespace BLL.Services.Implementations
     {
         private readonly IInMemoryDatabaseGame _inMemoryDatabaseGame;
         private readonly IMapService _mapService;
-        private readonly GameActionHandler _gameActionHandler;
+		private Dictionary<Game, GameActionHandler> _gameHandlers;
+        private readonly GameActionHandlerFactory _gameActionHandlerFactory;
         public GameService(IInMemoryDatabaseGame inMemoryDatabaseGame, IMapService mapService)
         {
             _inMemoryDatabaseGame = inMemoryDatabaseGame;
             _mapService = mapService;
-			_gameActionHandler = new GameActionHandlerFactory().CreateActionHandler(GameType.Base); //Factory gyártsa nekünk ezt, megfelelő implementációkkal feltöltve!
+			_gameHandlers = new Dictionary<Game, GameActionHandler>();
+			_gameActionHandlerFactory = new GameActionHandlerFactory();
         }
         public InMemoryDatabaseGameResponses RegisterGame(Guid guid, Game game)
         {
-            var newMap = _mapService.GenerateMap(GameType.Base); //TODO átadni paraméterként
+            var newMap = _mapService.GenerateMap(game.DLCs);
             game.GameMap = newMap;
+			_gameHandlers.Add(game, _gameActionHandlerFactory.CreateActionHandler(game.DLCs));
             return _inMemoryDatabaseGame.AddGame(guid, game);
         }
 		public GameServiceResponses StartGame(Guid guid)
@@ -184,44 +187,52 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteEndTurnAction(game, name);
+			return _gameHandlers[game].ExecuteEndTurnAction(game, name);
 		}
-		public GameServiceResponses ClaimCorner(Guid guid, int id, string name)
+		public GameServiceResponses BuildVillage(Guid guid, int id, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteClaimCornerAction(game, id, name);
+			return _gameHandlers[game].ExecuteBuildVillageAction(game, id, name);
 		}
-		public GameServiceResponses ClaimEdge(Guid guid, int id, string name)
+		public GameServiceResponses BuildCity(Guid guid, int id, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteClaimEdgeAction(game, id, name);
+			return _gameHandlers[game].ExecuteBuildCityAction(game, id, name);
 		}
-		public GameServiceResponses ClaimInitialCorner(Guid guid, int id, string name)
+		public GameServiceResponses BuildRoad(Guid guid, int id, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteClaimInitialCornerAction(game, id, name);
+			return _gameHandlers[game].ExecuteBuildRoadAction(game, id, name);
 		}
-		public GameServiceResponses ClaimInitialRoad(Guid guid, int id, string name)
+		public GameServiceResponses BuildInitialVillage(Guid guid, int id, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			var response = _gameActionHandler.ExecuteClaimInitialEdgeAction(game, id, name);
-			return response;
+			return _gameHandlers[game].ExecuteBuildInitialVillageAction(game, id, name);
+		}
+		public GameServiceResponses BuildInitialRoad(Guid guid, int id, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			return _gameHandlers[game].ExecuteBuildInitialRoadAction(game, id, name);
 		}
 		public GameServiceResponses MoveRobber(Guid guid, int id, string name)
 		{
@@ -230,7 +241,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteMoveRobberAction(game, id, name);
+			return _gameHandlers[game].ExecuteMoveRobberAction(game, id, name);
 		}
 		public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer) // TODO  configolható lehessen tengeri városoknál a kereskedés aránya (1:2 vagy 1:3 akár)
 		{
@@ -239,7 +250,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteRegisterTradeOfferWithBankAction(game, offer);
+			return _gameHandlers[game].ExecuteRegisterTradeOfferWithBankAction(game, offer);
 		}
 		public GameServiceResponses RegisterTradeOffer(Guid guid, TradeOffer offer)
 		{
@@ -248,7 +259,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteRegisterTradeOfferAction(game, offer);
+			return _gameHandlers[game].ExecuteRegisterTradeOfferAction(game, offer);
 		}
 		public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name)
 		{
@@ -257,7 +268,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteAcceptTradeOfferAction(game, offer, name);
+			return _gameHandlers[game].ExecuteAcceptTradeOfferAction(game, offer, name);
 		}
 		public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name) //TODO idk mit???
 		{
@@ -266,7 +277,7 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteThrowResourcesAction(game, thrownResources, name);
+			return _gameHandlers[game].ExecuteThrowResourcesAction(game, thrownResources, name);
 		}
 		public GameServiceResponses RollDices(Guid guid, string name)
         {
@@ -275,7 +286,7 @@ namespace BLL.Services.Implementations
             {
                 return GameServiceResponses.InvalidGame;
             }
-			return _gameActionHandler.ExecuteDiceRollAction(game, name);
+			return _gameHandlers[game].ExecuteDiceRollAction(game, name);
         }
     }
 }

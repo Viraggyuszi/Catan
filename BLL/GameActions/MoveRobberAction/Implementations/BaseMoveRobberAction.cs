@@ -19,7 +19,7 @@ namespace BLL.GameActions.MoveRobberAction.Implementations
                 return GameServiceResponses.InvalidMember;
             }
             var newRobbedField = game.GameMap.FieldList.FirstOrDefault(f => f.Id == fieldId);
-            if (newRobbedField is null)
+            if (newRobbedField is null || newRobbedField.Type==TerrainType.Sea || newRobbedField.Type==TerrainType.Unknown)
             {
                 return GameServiceResponses.InvalidField;
             }

@@ -25,6 +25,8 @@ namespace Catan.Shared.Response
     }
     public enum GameServiceResponses
     {
+        ShipCantBePlacedHere,
+        ForbiddenAction,
         Success,
         InvalidGame,
         InvalidMember,
@@ -41,6 +43,8 @@ namespace Catan.Shared.Response
         InitialRoadNotPlacedCorrectly,
         CantPlaceCornerAtTheMoment,
         CantPlaceEdgeAtTheMoment,
+        CantPlaceVillageNextToOtherVillage,
+        CantUpgradeVillage,
         NotEnoughResourcesForRoad,
         NotEnoughResourcesForVillage,
         NotEnoughResourcesForUpgrade,

@@ -22,14 +22,15 @@ namespace BLL.Services.Implementations
             _gameService = gameService;
             _inMemoryDatabaseLobby = inMemoryDatabaseLobby;
         }
-        public InMemoryDatabaseLobbyResponses CreateLobby(string name)
+        public InMemoryDatabaseLobbyResponses CreateLobby(string name, Dictionary<GameType,bool> DLCs)
         {
             var guid = Guid.NewGuid();
             var lobby = new Lobby
             {
                 Name = name,
                 Players = new List<Player>(),
-                GuID = guid
+                GuID = guid,
+                DLCs = DLCs
             };
             return _inMemoryDatabaseLobby.AddLobby(guid, lobby);
         }
@@ -51,9 +52,11 @@ namespace BLL.Services.Implementations
             {
                 return InMemoryDatabaseGameResponses.CreateGameFailed;
             }
-
-
-            game.GameType = GameType.Base; //TODO
+			
+            /*
+             * Since there are no DLCs atm that gives other dices then the default ones, 
+             * the two base dices are hard coded, but it should be refactored in the future.
+             */
             game.Dices.Add(new BaseDice());
             game.Dices.Add(new BaseDice());
 

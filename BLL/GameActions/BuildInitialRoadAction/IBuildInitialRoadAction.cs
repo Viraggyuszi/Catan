@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.GameActions.ClaimInitialEdgeAction
+namespace BLL.GameActions.BuildInitialRoadAction
 {
-    public interface IClaimInitialEdgeAction
+    public interface IBuildInitialRoadAction
     {
         public GameServiceResponses Execute(Game game, int edgeId, string name);
     }

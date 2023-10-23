@@ -48,7 +48,16 @@ namespace Catan.Shared.Model.GameState
             inventory[Resources.Brick] -= 1;
             inventory[Resources.Wood] -= 1;
         }
-        public Resources GetRandomResource()
+		public bool HasEnoughForShip()
+		{
+			return inventory[Resources.Sheep] >= 1 && inventory[Resources.Wood] >= 1;
+		}
+		public void PayForShip()
+		{
+			inventory[Resources.Sheep] -= 1;
+			inventory[Resources.Wood] -= 1;
+		}
+		public Resources GetRandomResource()
         {
             List<Resources> list = new List<Resources>();
             foreach (var item in inventory)

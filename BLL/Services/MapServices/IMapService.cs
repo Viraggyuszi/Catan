@@ -10,6 +10,6 @@ namespace BLL.Services.MapServices
 {
     public interface IMapService
     {
-        public Map GenerateMap(GameType gameType);
+        public Map GenerateMap(Dictionary<GameType,bool> DLCs);
     }
 }

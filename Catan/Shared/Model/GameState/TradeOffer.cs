@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Catan.Shared.Model.GameState
 {
-    public class TradeOffer //TODO elkülöníteni a cserét a bankkal és a játékosokkal!
+    public class TradeOffer
     {
         public Player Owner { get; set; }
         public Inventory OwnerOffer { get; set; }

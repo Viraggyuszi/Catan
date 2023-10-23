@@ -1,4 +1,4 @@
-﻿using BLL.GameActions.ClaimInitialCornerAction;
+﻿using BLL.GameActions.BuildInitialVillageAction;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Response;
 using System;
@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.GameActions.ClaimInitialCornerAction.Implementations
+namespace BLL.GameActions.BuildInitialVillageAction.Implementations
 {
-    public class BaseClaimInitialCornerAction : IClaimInitialCornerAction
+    public class BaseBuildInitialVillageAction : IBuildInitialVillageAction
     {
         public GameServiceResponses Execute(Game game, int cornerId, string name)
         {
