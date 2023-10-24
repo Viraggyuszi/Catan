@@ -7,10 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.GameActions.ThrowResourcesAction
+namespace BLL.GameActions.PlayCardAction
 {
-    public interface IThrowResourcesAction
-    {
-        public GameServiceResponses Execute(Game game, AbstractInventory thrownResources, string name);
-    }
+	public interface IPlayCardAction
+	{
+		public GameServiceResponses Execute(Game game, CardType card, string name);
+	}
 }

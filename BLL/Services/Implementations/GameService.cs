@@ -1,10 +1,10 @@
 ﻿using BLL.GameActions;
 using BLL.Services.Interfaces;
 using BLL.Services.MapServices;
-using Catan.Shared.Model;
 using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
+using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Response;
 
 namespace BLL.Services.Implementations
@@ -160,7 +160,12 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return game.GameOver ? GameServiceResponses.GameOver : GameServiceResponses.GameInProgress; //TODO why game over???
+			if (game.PlayerList.Any(p => p.Points >= game.PointsToWin))
+			{
+				game.Winner = game.PlayerList.First(p => p.Points >= game.PointsToWin);
+				return GameServiceResponses.GameOver;
+			}
+			return GameServiceResponses.GameInProgress;
 		}
 		public List<Player>? GetPlayers(Guid guid)
 		{
@@ -270,7 +275,7 @@ namespace BLL.Services.Implementations
 			}
 			return _gameHandlers[game].ExecuteAcceptTradeOfferAction(game, offer, name);
 		}
-		public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name) //TODO idk mit???
+		public GameServiceResponses ThrowResources(Guid guid, AbstractInventory thrownResources, string name) //TODO idk mit???
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)

@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Catan.Shared.Model.GameMap;
 
-namespace Catan.Shared.Model.GameState
+namespace Catan.Shared.Model.GameState.Inventory
 {
-    public class Inventory
+    public class AbstractInventory
     {
         protected Dictionary<Resources, int> inventory;
-        public Inventory()
+        public AbstractInventory()
         {
             inventory = new Dictionary<Resources, int>
             {

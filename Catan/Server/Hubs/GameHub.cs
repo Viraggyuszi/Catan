@@ -15,6 +15,7 @@ using BLL.Services;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
 using Newtonsoft.Json.Linq;
+using Catan.Shared.Model.GameState.Inventory;
 
 namespace Catan.Server.Hubs
 {
@@ -64,7 +65,7 @@ namespace Catan.Server.Hubs
 				throw new Exception("You can't end your turn during someone else's turn");
 			}
 			Guid guid = Guid.Parse(guidstring);
-			_gameService.EndPlayerTurn(guid,actor.Name);
+			var response = _gameService.EndPlayerTurn(guid,actor.Name); //TODO response handling
 			await Clients.Caller.SendAsync("TurnEnded");
 			await CallNextPlayer(guid);
 		}
@@ -97,7 +98,7 @@ namespace Catan.Server.Hubs
 				throw new Exception("You can't roll dices during someone else's turn");
 			}
 			Guid guid = Guid.Parse(guidstring);
-			var response = _gameService.RollDices(guid, actor.Name); //TODO 
+			var response = _gameService.RollDices(guid, actor.Name); //TODO response handling
 
 			var dices = GetLatestRolledBaseDices(guidstring);
 			if (dices is not null)
@@ -144,17 +145,17 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("Can't find active player");
 			}
-			//TODO a felező algoritmus visszatér az eldobott nyersanyagokkal, sszerver oldalon ellenőrizni, hogy tényleg jó mennyiséget dobott-e el
+			//TODO a felező algoritmus visszatér az eldobott nyersanyagokkal, szerver oldalon ellenőrizni, hogy tényleg jó mennyiséget dobott-e el
 			//ha igen, ha minden pacek, akkor pedig mindenkinek frissíti a játékot.
 		}
-		public async Task ThrowResourcesOnSevenRoll(Actor actor, string guidstring, Inventory inventory)
+		public async Task ThrowResourcesOnSevenRoll(Actor actor, string guidstring, AbstractInventory inventory)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
 				throw new Exception("Using other player's name");
 			}
 			Guid guid=Guid.Parse(guidstring);
-			var response = _gameService.ThrowResources(guid, inventory, actor.Name);
+			var response = _gameService.ThrowResources(guid, inventory, actor.Name); //TODO response handling
 			await NotifyClients(Guid.Parse(guidstring));
 		}
 		public string GetMap(string guidstring)
@@ -204,7 +205,7 @@ namespace Catan.Server.Hubs
 				await Clients.Client(connection).SendAsync("TakeNormalTurn");
 			}
 		}
-		public async Task ClaimInitialVillage(Actor actor,string guidstring,int id)
+		public async Task BuildInitialVillage(Actor actor,string guidstring,int id)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -224,8 +225,8 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					var response = _gameService.BuildInitialVillage(guid, id, actor.Name); //TODO
-                    await NotifyMapChanged(guid);
+					var response = _gameService.BuildInitialVillage(guid, id, actor.Name); //TODO response handling
+					await NotifyMapChanged(guid);
 					await NotifyClients(guid);
 					await Clients.Caller.SendAsync("PlaceInitialRoad");
 				}
@@ -235,7 +236,7 @@ namespace Catan.Server.Hubs
 				}
 			}
 		}
-		public async Task ClaimInitialRoad(Actor actor, string guidstring,int id)
+		public async Task BuildInitialRoad(Actor actor, string guidstring,int id)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -255,8 +256,8 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					var response = _gameService.BuildInitialRoad(guid, id, actor.Name); //TODO
-                    await NotifyMapChanged(guid);
+					var response = _gameService.BuildInitialRoad(guid, id, actor.Name); //TODO response handling
+					await NotifyMapChanged(guid);
 					await Clients.Caller.SendAsync("InitialTurnDone");
 				}
 				catch (Exception e)
@@ -264,7 +265,7 @@ namespace Catan.Server.Hubs
 					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
 					return;
 				}
-				var response2 = _gameService.EndPlayerTurn(guid, actor.Name);//TODO
+				var response2 = _gameService.EndPlayerTurn(guid, actor.Name); //TODO response handling
 				await CallNextPlayer(guid);
 				await NotifyClients(guid);
 			}
@@ -273,13 +274,16 @@ namespace Catan.Server.Hubs
 		{
 			await Clients.Group(guid.ToString()).SendAsync("ProcessCurrentPlayer",GetCurrentPlayer(guid.ToString()));
 			await Clients.Group(guid.ToString()).SendAsync("FetchResources");
-			await Clients.Group(guid.ToString()).SendAsync("FetchTradeOffers"); //TODO külön hívásba
+		}
+		private async Task NotifyTradeOffersChanged(Guid guid)
+		{
+			await Clients.Group(guid.ToString()).SendAsync("FetchTradeOffers");
 		}
 		private async Task NotifyMapChanged(Guid guid)
 		{
 			await Clients.Group(guid.ToString()).SendAsync("ProcessMap", GetMap(guid.ToString()));
 		}
-		public async Task ClaimCorner(Actor actor, string guidstring, int id)
+		public async Task BuildVillage(Actor actor, string guidstring, int id) //TODO BuildCity
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -299,7 +303,7 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					var response = _gameService.BuildVillage(guid, id, actor.Name); //TODO
+					var response = _gameService.BuildVillage(guid, id, actor.Name); //TODO response handling
 					await NotifyMapChanged(guid);
 					await NotifyClients(guid);
 				}
@@ -309,7 +313,7 @@ namespace Catan.Server.Hubs
 				}
 			}
 		}
-		public async Task ClaimEdge(Actor actor, string guidstring, int id)
+		public async Task BuildRoad(Actor actor, string guidstring, int id) //TODO buildship
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -329,7 +333,7 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					var response = _gameService.BuildRoad(guid, id, actor.Name); //TODO
+					var response = _gameService.BuildRoad(guid, id, actor.Name); //TODO response handling
 					await NotifyMapChanged(guid);
 					await NotifyClients(guid);
 				}
@@ -377,7 +381,7 @@ namespace Catan.Server.Hubs
 			{
 				try
 				{
-					_gameService.MoveRobber(guid, id, actor.Name!); //TODO
+					var response = _gameService.MoveRobber(guid, id, actor.Name!); //TODO response handling
 					await NotifyMapChanged(guid);
 					await NotifyClients(guid);
 					await Clients.Caller.SendAsync("RobberMovementResolved");
@@ -406,11 +410,11 @@ namespace Catan.Server.Hubs
 			}
 			if (tradeOffer.ToPlayers)
 			{
-				var response = _gameService.RegisterTradeOffer(Guid.Parse(guidstring), tradeOffer); //TODO
+				var response = _gameService.RegisterTradeOffer(Guid.Parse(guidstring), tradeOffer); //TODO response handling
 			}
 			else
 			{
-				var response = _gameService.RegisterTradeOfferWithBank(Guid.Parse(guidstring), tradeOffer); //TODO
+				var response = _gameService.RegisterTradeOfferWithBank(Guid.Parse(guidstring), tradeOffer); //TODO response handling
 			}
 			
 			await NotifyClients(Guid.Parse(guidstring));
@@ -425,7 +429,7 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("You can't accept trade offers during your turn");
 			}
-			var response = _gameService.AcceptTradeOffer(Guid.Parse(guidstring), tradeOffer, actor.Name); //TODO
+			var response = _gameService.AcceptTradeOffer(Guid.Parse(guidstring), tradeOffer, actor.Name); //TODO response handling
 			await NotifyClients(Guid.Parse(guidstring));
 		}
 	}

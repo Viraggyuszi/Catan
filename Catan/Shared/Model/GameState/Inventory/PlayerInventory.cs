@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Catan.Shared.Model.GameMap;
 
-namespace Catan.Shared.Model.GameState
+namespace Catan.Shared.Model.GameState.Inventory
 {
-    public class PlayerInventory : Inventory
+    public class PlayerInventory : AbstractInventory
     {
         public PlayerInventory()
         {
@@ -18,12 +18,21 @@ namespace Catan.Shared.Model.GameState
         {
             return inventory;
         }
-
-        public bool HasEnoughForUpgrade()
+        public bool HasEnoughForCard()
+        {
+            return inventory[Resources.Ore] >= 1 && inventory[Resources.Wheat] >= 1 && inventory[Resources.Sheep] >= 1;
+        }
+        public void PayForCard()
+        {
+            inventory[Resources.Ore] -= 1;
+            inventory[Resources.Sheep] -= 1;
+            inventory[Resources.Wheat] -= 1;
+        }
+        public bool HasEnoughForCityUpgrade()
         {
             return inventory[Resources.Ore] >= 3 && inventory[Resources.Wheat] >= 2;
         }
-        public void PayForUpgrade()
+        public void PayForCityUpgrade()
         {
             inventory[Resources.Ore] -= 3;
             inventory[Resources.Wheat] -= 2;
@@ -70,7 +79,7 @@ namespace Catan.Shared.Model.GameState
             int rnd = new Random().Next(0, list.Count());
             return list[rnd];
         }
-        public bool HasSufficientResources(Inventory _inventory)
+        public bool HasSufficientResources(AbstractInventory _inventory)
         {
             if (_inventory.GetResourceCount(Resources.Wood) > inventory[Resources.Wood]) return false;
             if (_inventory.GetResourceCount(Resources.Brick) > inventory[Resources.Brick]) return false;
@@ -79,7 +88,7 @@ namespace Catan.Shared.Model.GameState
             if (_inventory.GetResourceCount(Resources.Wheat) > inventory[Resources.Wheat]) return false;
             return true;
         }
-        public void AddResources(Inventory _inventory)
+        public void AddResources(AbstractInventory _inventory)
         {
             inventory[Resources.Wood] += _inventory.GetResourceCount(Resources.Wood);
             inventory[Resources.Brick] += _inventory.GetResourceCount(Resources.Brick);
@@ -87,7 +96,7 @@ namespace Catan.Shared.Model.GameState
             inventory[Resources.Sheep] += _inventory.GetResourceCount(Resources.Sheep);
             inventory[Resources.Wheat] += _inventory.GetResourceCount(Resources.Wheat);
         }
-        public void RemoveResources(Inventory _inventory)
+        public void RemoveResources(AbstractInventory _inventory)
         {
             inventory[Resources.Wood] -= _inventory.GetResourceCount(Resources.Wood);
             inventory[Resources.Brick] -= _inventory.GetResourceCount(Resources.Brick);

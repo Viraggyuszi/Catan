@@ -38,6 +38,7 @@ namespace BLL.GameActions.EndTurnAction.Implementations
                     game.ActivePlayerCanPlaceInitialRoad = true;
                 }
             }
+            game.FreeRoadBuilding = 0;
             return GameServiceResponses.Success;
         }
     }

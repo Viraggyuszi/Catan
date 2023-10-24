@@ -1,6 +1,7 @@
 ﻿using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
+using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using System;
@@ -42,7 +43,7 @@ namespace BLL.Services.Interfaces
         public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer);
         public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name);
 
-        public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name);
+        public GameServiceResponses ThrowResources(Guid guid, AbstractInventory thrownResources, string name);
 
         
 	}

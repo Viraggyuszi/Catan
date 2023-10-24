@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BLL.Services.MapGenerator.Implementations
 {
-    public class BaseMapGenerator : IMapGenerator
+    public class BaseMapGenerator_Deprecated : IMapGenerator
     {
         public Map GenerateMap()
         {

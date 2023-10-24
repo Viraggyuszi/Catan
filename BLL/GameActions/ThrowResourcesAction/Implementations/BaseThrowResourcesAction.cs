@@ -1,5 +1,6 @@
 ﻿using BLL.GameActions.ThrowResourcesAction;
 using Catan.Shared.Model.GameState;
+using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Response;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace BLL.GameActions.ThrowResourcesAction.Implementations
 {
     public class BaseThrowResourcesAction : IThrowResourcesAction
     {
-        public GameServiceResponses Execute(Game game, Inventory thrownResources, string name)
+        public GameServiceResponses Execute(Game game, AbstractInventory thrownResources, string name)
         {
             var player = game.PlayerList.FirstOrDefault(p => p.Name == name);
             if (player is null)

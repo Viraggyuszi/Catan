@@ -25,6 +25,11 @@ namespace Catan.Shared.Response
     }
     public enum GameServiceResponses
     {
+        DontHaveCard,
+		OutOfCards,
+		NotEnoughResourcesForCard,
+		CantBuyCardsAtTheMoment,
+        CantPlayCardsAtTheMoment,
         ShipCantBePlacedHere,
         ForbiddenAction,
         Success,

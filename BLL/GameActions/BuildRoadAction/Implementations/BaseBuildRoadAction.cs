@@ -44,6 +44,13 @@ namespace BLL.GameActions.BuildRoadAction.Implementations
 				}
 			}
 			var inventory = game.ActivePlayer.Inventory;
+			if (game.FreeRoadBuilding > 0) 
+			{
+				game.FreeRoadBuilding -= 1;
+				edge.Owner = game.ActivePlayer;
+				edge.EdgeType = EdgeType.Road;
+				return GameServiceResponses.Success;
+			}
 			if (!inventory.HasEnoughForRoad())
 			{
 				return GameServiceResponses.NotEnoughResourcesForRoad;

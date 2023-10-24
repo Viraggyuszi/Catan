@@ -30,18 +30,13 @@ namespace BLL.GameActions.BuildCityAction.Implementations
 				return GameServiceResponses.CantUpgradeVillage;
 			}
 			var inventory = game.ActivePlayer.Inventory;
-			if (!inventory.HasEnoughForUpgrade())
+			if (!inventory.HasEnoughForCityUpgrade())
 			{
 				return GameServiceResponses.NotEnoughResourcesForUpgrade;
 			}
-			inventory.PayForUpgrade();
+			inventory.PayForCityUpgrade();
 			corner.Level = 2;
-			game.ActivePlayer.Points++;
-			if (game.ActivePlayer.Points >= 10)
-			{
-				game.GameOver = true;
-				game.Winner = game.ActivePlayer;
-			}
+			game.ActivePlayer.Points += 1;
 			return GameServiceResponses.Success;
 		}
 	}

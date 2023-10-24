@@ -13,6 +13,7 @@ using BLL.GameActions.RegisterTradeOfferWithBankAction;
 using BLL.GameActions.RollDiceAction;
 using BLL.GameActions.ThrowResourcesAction;
 using Catan.Shared.Model.GameState;
+using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Response;
 using System;
 using System.Collections.Generic;
@@ -127,7 +128,7 @@ namespace BLL.GameActions
 			}
             return AcceptTradeOfferAction.Execute(game, tradeOffer, name);
         }
-        public GameServiceResponses ExecuteThrowResourcesAction(Game game, Inventory thrownResources, string name)
+        public GameServiceResponses ExecuteThrowResourcesAction(Game game, AbstractInventory thrownResources, string name)
         {
             if (ThrowResourcesAction is null)
             {

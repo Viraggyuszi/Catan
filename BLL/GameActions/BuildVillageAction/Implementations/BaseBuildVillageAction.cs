@@ -49,12 +49,7 @@ namespace BLL.GameActions.BuildVillageAction.Implementations
 			inventory.PayForVillage();
 			corner.Player = game.ActivePlayer;
 			corner.Level = 1;
-			game.ActivePlayer.Points++;
-			if (game.ActivePlayer.Points >= 10)
-			{
-				game.GameOver = true;
-				game.Winner = game.ActivePlayer;
-			}
+			game.ActivePlayer.Points += 1;
 			foreach (var edge in corner.Edges)
 			{
 				if (corner == edge.Corners[0])
