@@ -73,7 +73,7 @@ namespace BLL.GameActions
                 AcceptTradeOfferAction = new BaseAcceptTradeOfferAction(),
                 BuildVillageAction = new BaseBuildVillageAction(),
                 BuildCityAction = new BaseBuildCityAction(),
-                BuildRoadAction = new BaseBuildRoadAction(),
+                BuildRoadAction = new SeafarerBuildRoadAction(),
                 BuildInitialVillageAction = new BaseBuildInitialVillageAction(),
                 BuildInitialRoadAction = new BaseBuildInitialRoadAction(),
                 RollDiceAction = new BaseRollDiceAction(),

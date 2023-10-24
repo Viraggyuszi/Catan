@@ -21,7 +21,7 @@ namespace BLL.Services.MapServices.Implementations
 			return gameType switch
 			{
 				GameType.Base => new BaseGameMapGenerator().GenerateMap(),
-				GameType.Seafarer => throw new Exception("Not implemented yet"),
+				GameType.Seafarer => new SeafarerGameMapGenerator().GenerateMap(),
 				_ => throw new NotImplementedException(),
 			};
 		}

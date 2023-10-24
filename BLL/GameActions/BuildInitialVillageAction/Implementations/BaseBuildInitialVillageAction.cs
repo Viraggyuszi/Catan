@@ -26,7 +26,15 @@ namespace BLL.GameActions.BuildInitialVillageAction.Implementations
             {
                 return GameServiceResponses.CornerAlreadyTaken;
             }
-            game.ActivePlayerCanPlaceInitialVillage = false;
+			if (corner.Fields.All(f => f.Type == Catan.Shared.Model.GameMap.TerrainType.Sea))
+			{
+				return GameServiceResponses.CantPlaceCornerToSea;
+			}
+			if (corner.Level == -1)
+			{
+				return GameServiceResponses.CantPlaceVillageNextToOtherVillage;
+			}
+			game.ActivePlayerCanPlaceInitialVillage = false;
             corner.Player = game.ActivePlayer;
             corner.Level = 1;
             game.ActivePlayer.Points++;

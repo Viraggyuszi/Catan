@@ -27,7 +27,11 @@ namespace Catan.Shared.Model.GameState.Inventory
             {
                 case TerrainType.Desert:
                     break;
-                case TerrainType.Sea:
+				case TerrainType.Unknown:
+					break;
+				case TerrainType.GoldField:
+					break;
+				case TerrainType.Sea:
                     break;
                 case TerrainType.Forest:
                     inventory[Resources.Wood] += count;

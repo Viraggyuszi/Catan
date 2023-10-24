@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.GameActions.BuildShipAction.Implementations
+namespace BLL.GameActions.BuildRoadAction.Implementations
 {
-	public class SeafarerBuildShipAction : IBuildShipAction
+	public class SeafarerBuildRoadAction : IBuildRoadAction
 	{
 		public GameServiceResponses Execute(Game game, int edgeId, string name)
 		{
@@ -30,32 +30,39 @@ namespace BLL.GameActions.BuildShipAction.Implementations
 			{
 				return GameServiceResponses.EdgeAlreadyTaken;
 			}
-			if (!edge.Corners[0].Fields.Any(f => edge.Corners[1].Fields.Contains(f) && f.Type == TerrainType.Sea))
+			if (edge.Corners.Any(c => c.Fields.All(f => f.Type == TerrainType.Sea)))
 			{
-				return GameServiceResponses.ShipCantBePlacedHere;
+				return GameServiceResponses.CantPlaceEdgeToSea;
 			}
 			if (edge.Corners[0].Player.Name != name && edge.Corners[1].Player.Name != name)
 			{
 				var corner1 = edge.Corners[0];
 				var corner2 = edge.Corners[1];
-				if (!corner1.Edges.Any(e => e.Owner.Name == name && e.EdgeType == EdgeType.Ship) && !corner2.Edges.Any(e => e.Owner.Name == name && e.EdgeType == EdgeType.Ship))
+				if (!corner1.Edges.Any(e => e.Owner.Name == name && e.EdgeType == EdgeType.Road) && !corner2.Edges.Any(e => e.Owner.Name == name && e.EdgeType == EdgeType.Road))
 				{
 					return GameServiceResponses.CantPlaceCornerWithoutPath;
 				}
 			}
 			var inventory = game.ActivePlayer.Inventory;
-			if (!inventory.HasEnoughForShip())
+			if (game.FreeRoadBuilding > 0)
+			{
+				game.FreeRoadBuilding -= 1;
+				edge.Owner = game.ActivePlayer;
+				edge.EdgeType = EdgeType.Road;
+				return GameServiceResponses.Success;
+			}
+			if (!inventory.HasEnoughForRoad())
 			{
 				return GameServiceResponses.NotEnoughResourcesForRoad;
 			}
 			edge.Owner = game.ActivePlayer;
-			edge.EdgeType = EdgeType.Ship;
-			inventory.PayForShip();
+			edge.EdgeType = EdgeType.Road;
+			inventory.PayForRoad();
 			foreach (var corner in edge.Corners)
 			{
 				foreach (var field in corner.Fields)
 				{
-					if (field.Type==TerrainType.Unknown)
+					if (field.Type == TerrainType.Unknown)
 					{
 						field.RevealField();
 						inventory.AddResource(field.Type, 1);
