@@ -639,7 +639,6 @@
 	private List<TradeOffer> tradeOffers = new List<TradeOffer>();
 	private async Task AcceptTradeOffer(TradeOffer tradeOffer)
 	{
-		//var tradeOffer = tradeOffers.First(t => t.Id == id);
 		await hubConnection!.SendAsync("AcceptTradeOffer", actor, Guid, tradeOffer);
 	}
 	private async Task SendTradeOffer()
