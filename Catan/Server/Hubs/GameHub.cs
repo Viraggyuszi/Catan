@@ -423,26 +423,12 @@ namespace Catan.Server.Hubs
 		}
 		
 
-		public List<string>? GetTradeOffers(string guidstring)
+		public List<TradeOffer>? GetTradeOffers(string guidstring)
 		{
 			var tradeOffers= _gameService.GetTradeOffers(Guid.Parse(guidstring));
-			if (tradeOffers is null)
-			{
-				return null;
-			}
-			var result = new List<string>();
-			foreach (var tradeItem in tradeOffers)
-			{
-				var options = new JsonSerializerOptions()
-				{
-					ReferenceHandler = ReferenceHandler.IgnoreCycles,
-					IncludeFields = true
-				};
-				result.Add(JsonSerializer.Serialize(tradeItem, options));
-			}
-			return result;
+			return tradeOffers;
 		}
-		public async Task SendTradeOffer(Actor actor, string guidstring, string tradeOfferString)
+		public async Task SendTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -452,12 +438,6 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("You can't send trade offers during someone else's turn");
 			}
-			var options = new JsonSerializerOptions()
-			{
-				ReferenceHandler = ReferenceHandler.IgnoreCycles,
-				IncludeFields = true
-			};
-			var tradeOffer = JsonSerializer.Deserialize<TradeOffer>(tradeOfferString, options);
 			if (tradeOffer is null)
 			{
 				throw new Exception("Trade offer is null");
@@ -474,7 +454,7 @@ namespace Catan.Server.Hubs
 			
 			await NotifyClients(Guid.Parse(guidstring));
 		}
-		public async Task AcceptTradeOffer(Actor actor, string guidstring, string tradeOfferString) //TODO kliens oldalról még indítani kell
+		public async Task AcceptTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer) //TODO kliens oldalról még indítani kell
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -484,12 +464,6 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("You can't accept trade offers during your turn");
 			}
-			var options = new JsonSerializerOptions()
-			{
-				ReferenceHandler = ReferenceHandler.IgnoreCycles,
-				IncludeFields = true
-			};
-			var tradeOffer = JsonSerializer.Deserialize<TradeOffer>(tradeOfferString, options);
 			if (tradeOffer is null)
 			{
 				throw new Exception("Trade offer is null");

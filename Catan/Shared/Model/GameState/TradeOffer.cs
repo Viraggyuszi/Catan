@@ -9,7 +9,6 @@ namespace Catan.Shared.Model.GameState
 {
     public class TradeOffer
     {
-        public int Id { get; set; }
         public Player Owner { get; set; }
         public AbstractInventory OwnerOffer { get; set; }
         public AbstractInventory TargetOffer { get; set; }

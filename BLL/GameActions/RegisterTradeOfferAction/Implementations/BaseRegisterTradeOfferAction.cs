@@ -21,7 +21,6 @@ namespace BLL.GameActions.RegisterTradeOfferAction.Implementations
             {
                 if (game.ActivePlayer.Inventory.HasSufficientResources(offer.OwnerOffer))
                 {
-                    offer.Id = game.TradeOfferList.Count;
                     game.TradeOfferList.Add(offer);
                     return GameServiceResponses.Success;
                 }

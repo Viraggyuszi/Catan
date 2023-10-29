@@ -17,7 +17,18 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+	.AddJsonProtocol(options =>
+	{
+		options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+		options.PayloadSerializerOptions.IncludeFields = true;
+	});
+builder.Services.AddControllers()
+	.AddJsonOptions(options =>
+	{
+		options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+		options.JsonSerializerOptions.IncludeFields = true;
+	});
 builder.Services.AddResponseCompression(opts =>
 {
 	opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(

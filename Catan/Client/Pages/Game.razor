@@ -292,7 +292,7 @@
 <div>
 	@foreach (var tradeoffer in tradeOffers)
 	{
-		<p>@tradeoffer.Owner.Name</p> <button @onclick="()=>AcceptTradeOffer(tradeoffer.Id)"></button>
+		<p>@tradeoffer.Owner.Name</p> <button @onclick="()=>AcceptTradeOffer(tradeoffer)"></button>
 	}
 	<button @onclick="SendTradeOffer"> Küldés</button>
 </div>
@@ -384,6 +384,11 @@
 					var token = await JS.InvokeAsync<string>("localStorage.getItem", "loginToken");
 					return token;
 				};
+			})
+			.AddJsonProtocol(options =>
+			{
+				options.PayloadSerializerOptions.ReferenceHandler=ReferenceHandler.IgnoreCycles;
+				options.PayloadSerializerOptions.IncludeFields = true;
 			})
 			.Build();
 
@@ -622,39 +627,20 @@
 		});
 		hubConnection!.On("FetchTradeOffers", async () =>
 		{
-			var response = await hubConnection!.InvokeAsync<List<string>?>("GetTradeOffers", Guid);
+			var response = await hubConnection!.InvokeAsync<List<TradeOffer>?>("GetTradeOffers", Guid);
 			if (response is not null)
 			{
-				tradeOffers.Clear();
-				foreach (var tradeOfferString in response)
-				{
-					var options = new JsonSerializerOptions()
-						{
-							ReferenceHandler = ReferenceHandler.IgnoreCycles,
-							IncludeFields = true
-						};
-					var tradeOffer = JsonSerializer.Deserialize<TradeOffer>(tradeOfferString, options);
-					if (tradeOffer is not null)
-					{
-						tradeOffers.Add(tradeOffer);
-					}
-				}
+				tradeOffers = response;
 			}	
 			StateHasChanged();
 		});
 
 	}
 	private List<TradeOffer> tradeOffers = new List<TradeOffer>();
-	private async Task AcceptTradeOffer(int id)
+	private async Task AcceptTradeOffer(TradeOffer tradeOffer)
 	{
-		var tradeOffer = tradeOffers.First(t => t.Id == id);
-		var options = new JsonSerializerOptions()
-			{
-				ReferenceHandler = ReferenceHandler.IgnoreCycles,
-				IncludeFields = true
-			};
-		var serializedTradeOffer = JsonSerializer.Serialize(tradeOffer, options);
-		await hubConnection!.SendAsync("AcceptTradeOffer", actor, Guid, serializedTradeOffer);
+		//var tradeOffer = tradeOffers.First(t => t.Id == id);
+		await hubConnection!.SendAsync("AcceptTradeOffer", actor, Guid, tradeOffer);
 	}
 	private async Task SendTradeOffer()
 	{
@@ -663,13 +649,7 @@
 		var goal = new AbstractInventory();
 		goal.AddResource(Resources.Ore, 3);
 		var tradeOffer = new TradeOffer(PlayerList.First(p => p.Name == actor.Name), offer, goal);
-		var options = new JsonSerializerOptions()
-			{
-				ReferenceHandler = ReferenceHandler.IgnoreCycles,
-				IncludeFields = true
-			};
-		var serializedTradeOffer = JsonSerializer.Serialize(tradeOffer, options);
-		await hubConnection!.SendAsync("SendTradeOffer", actor, Guid, serializedTradeOffer);
+		await hubConnection!.SendAsync("SendTradeOffer", actor, Guid, tradeOffer);
 	}
 	private int[] dices = new int[2];
 	private async Task SetConnectionString(string conID)
