@@ -9,7 +9,7 @@ namespace Catan.Shared.Model.GameState.Inventory
 {
     public class AbstractInventory
     {
-        protected Dictionary<Resources, int> inventory;
+        public Dictionary<Resources, int> inventory;
         public AbstractInventory()
         {
             inventory = new Dictionary<Resources, int>

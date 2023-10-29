@@ -42,6 +42,22 @@ namespace BLL.Services.MapGenerator.Implementations
 			field.IsRobbed = false;
 			return field;
 		}
+
+		private void Shuffle<T>(List<T> list)
+		{
+			Random rng = new Random();
+			int n = list.Count;
+
+			while (n > 1)
+			{
+				n--;
+				int k = rng.Next(n + 1);
+				T temp = list[k];
+				list[k] = list[n];
+				list[n] = temp;
+			}
+		}
+
 		private List<TerrainType> CreateTerrainTypesList()
 		{
 			var ret = new List<TerrainType>();
@@ -76,6 +92,10 @@ namespace BLL.Services.MapGenerator.Implementations
 				extraTerrainsList.Add(TerrainType.GoldField);
 				extraTerrainsList.Add(TerrainType.Cropfield);
 			}
+			Shuffle(extraTerrainsList);
+			Shuffle(baseIslandNumbersList);
+			Shuffle(extraNumbersList);
+			Shuffle(BaseIslandTerrainsList);
 			for (int i = 0; i < 32; i++)
 			{
 				extraTerrainsList.Add(TerrainType.Sea);

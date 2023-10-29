@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace Catan.Shared.Response
 {
+    public enum InMemoryDatabaseHandlerResponses
+    {
+        Success,
+        RegisterHandlerFailed,
+        RemoveHandlerFailed
+    }
     public enum InMemoryDatabaseLobbyResponses
     {
         Success,
@@ -25,6 +31,7 @@ namespace Catan.Shared.Response
     }
     public enum GameServiceResponses
     {
+        HandlerDoesntExist,
         DontHaveCard,
 		OutOfCards,
 		NotEnoughResourcesForCard,

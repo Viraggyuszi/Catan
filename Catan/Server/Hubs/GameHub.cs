@@ -16,6 +16,8 @@ using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
 using Newtonsoft.Json.Linq;
 using Catan.Shared.Model.GameState.Inventory;
+using Catan.Shared.Model.GameMap;
+using Microsoft.Extensions.Options;
 
 namespace Catan.Server.Hubs
 {
@@ -158,7 +160,7 @@ namespace Catan.Server.Hubs
 			var response = _gameService.ThrowResources(guid, inventory, actor.Name); //TODO response handling
 			await NotifyClients(Guid.Parse(guidstring));
 		}
-		public string GetMap(string guidstring)
+		public Map GetMap(string guidstring)
 		{
 			Guid guid = Guid.Parse(guidstring);
 			var map = _gameService.GetGameMap(guid);
@@ -166,14 +168,7 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("map is null");
 			}
-			var options = new JsonSerializerOptions
-			{
-				MaxDepth = 1000,
-				ReferenceHandler = ReferenceHandler.IgnoreCycles,
-				IncludeFields=true
-			};
-			string res= JsonSerializer.Serialize(map, options);
-			return res;
+			return map;
 		}
 		public string? GetCurrentPlayer(string guidstring)
 		{
@@ -283,7 +278,7 @@ namespace Catan.Server.Hubs
 		{
 			await Clients.Group(guid.ToString()).SendAsync("ProcessMap", GetMap(guid.ToString()));
 		}
-		public async Task BuildVillage(Actor actor, string guidstring, int id) //TODO BuildCity
+		public async Task BuildVillage(Actor actor, string guidstring, int id)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -313,6 +308,40 @@ namespace Catan.Server.Hubs
 				}
 			}
 		}
+
+		public async Task BuildCity(Actor actor, string guidstring, int id)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			if (_gameService.IsInitialRound(guid) == GameServiceResponses.InitialRound)
+			{
+				throw new Exception("It's starting round");
+			}
+			var playerName = _gameService.GetActivePlayerName(guid);
+			if (playerName is null)
+			{
+				throw new Exception("active player is null");
+			}
+			if (playerName != actor.Name)
+			{
+				throw new Exception("Not Active player");
+			}
+			try
+			{
+				var response = _gameService.BuildCity(guid, id, actor.Name); //TODO response handling
+				await NotifyMapChanged(guid);
+				await NotifyClients(guid);
+			}
+			catch (Exception e)
+			{
+				await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
+			}
+		}
+
+
 		public async Task BuildRoad(Actor actor, string guidstring, int id) //TODO buildship
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
@@ -394,11 +423,26 @@ namespace Catan.Server.Hubs
 		}
 		
 
-		public List<TradeOffer>? GetTradeOffers(string guidstring) //TODO kliensoldalról még indítani kell 
+		public List<string>? GetTradeOffers(string guidstring)
 		{
-			return _gameService.GetTradeOffers(Guid.Parse(guidstring));
+			var tradeOffers= _gameService.GetTradeOffers(Guid.Parse(guidstring));
+			if (tradeOffers is null)
+			{
+				return null;
+			}
+			var result = new List<string>();
+			foreach (var tradeItem in tradeOffers)
+			{
+				var options = new JsonSerializerOptions()
+				{
+					ReferenceHandler = ReferenceHandler.IgnoreCycles,
+					IncludeFields = true
+				};
+				result.Add(JsonSerializer.Serialize(tradeItem, options));
+			}
+			return result;
 		}
-		public async Task SendTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer) //TODO kliens oldalról még indítani kell
+		public async Task SendTradeOffer(Actor actor, string guidstring, string tradeOfferString)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -408,9 +452,20 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("You can't send trade offers during someone else's turn");
 			}
+			var options = new JsonSerializerOptions()
+			{
+				ReferenceHandler = ReferenceHandler.IgnoreCycles,
+				IncludeFields = true
+			};
+			var tradeOffer = JsonSerializer.Deserialize<TradeOffer>(tradeOfferString, options);
+			if (tradeOffer is null)
+			{
+				throw new Exception("Trade offer is null");
+			}
 			if (tradeOffer.ToPlayers)
 			{
 				var response = _gameService.RegisterTradeOffer(Guid.Parse(guidstring), tradeOffer); //TODO response handling
+				await NotifyTradeOffersChanged(new Guid(guidstring));
 			}
 			else
 			{
@@ -419,7 +474,7 @@ namespace Catan.Server.Hubs
 			
 			await NotifyClients(Guid.Parse(guidstring));
 		}
-		public async Task AcceptTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer) //TODO kliens oldalról még indítani kell
+		public async Task AcceptTradeOffer(Actor actor, string guidstring, string tradeOfferString) //TODO kliens oldalról még indítani kell
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -429,8 +484,19 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("You can't accept trade offers during your turn");
 			}
+			var options = new JsonSerializerOptions()
+			{
+				ReferenceHandler = ReferenceHandler.IgnoreCycles,
+				IncludeFields = true
+			};
+			var tradeOffer = JsonSerializer.Deserialize<TradeOffer>(tradeOfferString, options);
+			if (tradeOffer is null)
+			{
+				throw new Exception("Trade offer is null");
+			}
 			var response = _gameService.AcceptTradeOffer(Guid.Parse(guidstring), tradeOffer, actor.Name); //TODO response handling
 			await NotifyClients(Guid.Parse(guidstring));
+			await NotifyTradeOffersChanged(new Guid(guidstring));
 		}
 	}
 }

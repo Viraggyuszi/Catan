@@ -17,7 +17,7 @@
 		<div class="row">
 			<div class="col-md-2 d-flex flex-column">
 				
-				@foreach (var player in PlayerList)
+				@foreach (var player in PlayerList) 
 				{
 					if (player.Name == actor.Name)
 					{
@@ -45,8 +45,8 @@
 							</div>
 						</div>
 					}
-				}
-				<div class="mt-auto">
+				} @*PLAYERS CARDS*@
+				<div class="mt-auto"> @*INVENTORY*@
 					<div class="d-flex flex-row justify-content-evenly" style="background-color:rgb(250,227,144);opacity:0.8;">
 						@foreach (var inventoryElement in inventory)
 						{
@@ -77,18 +77,29 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-7">
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="900" xmlns:xlink="http://www.w3.org/1999/xlink">
+			<div class="col-md-7"> @*MAP*@
+				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="1500" xmlns:xlink="http://www.w3.org/1999/xlink">
 					<defs>
 						@foreach (var hexagon in hexagons)
 						{
 							var x = hexagon.Base.X + hexagonSize * Math.Sqrt(3) - 60.4;
 							var y = hexagon.Base.Y + hexagonSize - 1;
+							@*PATTERNS*@
 							switch (hexagon.Field.Type)
 							{
 								case TerrainType.Desert:
 									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
 										<image width="162" height="162" xlink:href="/images/tiles/desert.png"></image>
+									</pattern>
+									break;
+								case TerrainType.Unknown:
+									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+										<image width="162" height="162" xlink:href="/images/tiles/fog.png"></image>
+									</pattern>
+									break;
+								case TerrainType.GoldField:
+									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+										<image width="162" height="162" xlink:href="/images/tiles/goldfield.png"></image>
 									</pattern>
 									break;
 								case TerrainType.Cropfield:
@@ -121,16 +132,16 @@
 										<image width="162" height="162" xlink:href="/images/tiles/sea.png"></image>
 									</pattern>
 									break;
-							}
+							} 
 						}
 					</defs>
 
-
+					@*HEXAGONS*@
 					@foreach (var hexagon in hexagons)
 					{
 						<polygon points=@hexagon.VerticesToString() fill="url('#@hexagons.IndexOf(hexagon)')" 
 								@onclick="()=>ClickOnHexagon(hexagon.Field.Id)" stroke="black" stroke-width="1"></polygon>
-						@if (hexagon.Field.Type != TerrainType.Desert && hexagon.Field.Type != TerrainType.Sea)
+						@if (hexagon.Field.Type != TerrainType.Desert && hexagon.Field.Type != TerrainType.Sea && hexagon.Field.Type!=TerrainType.Unknown)
 						{
 							<circle cx="@DoubleToString(hexagon.Base.X)" cy="@DoubleToString(hexagon.Base.Y)" r="25" fill="beige" />
 							<text>
@@ -143,6 +154,7 @@
 							<circle cx="@DoubleToString(hexagon.Base.X-30)" cy="@DoubleToString(hexagon.Base.Y)" r="15" fill="black" />
 						}
 					}
+					@*CORNER PLACEHOLDERS*@
 					@foreach (var cornerCircle in cornerCircles)
 					{
 						if (cornerCircle.Corner.Level == 0)
@@ -174,6 +186,7 @@
 						  @onclick="()=>ClickOnCornerCircle(cornerCircle.Corner.Id)" fill="@cornerCircle.Corner.Player.Color" fill-opacity="1" stroke="black" stroke-width="2" stroke-opacity="0.9" />
 						}
 					}
+					@*EDGE PLACEHOLDERS*@
 					@foreach (var edgeLine in edgeLines)
 					{
 						if (edgeLine.Edge.Owner.Name is not null)
@@ -196,14 +209,14 @@
 					}
 				</svg>
 			</div>
-			<div class="col-md-3">
+			<div class="col-md-3"> 
 				<div class="flex-column justify-content-between">
-					<div class="m-3 p-3">
+					<div class="m-3 p-3"> @*CHAT*@
 						<div id="chatSpace">
 							<Chat @ref=ChatComponent />
 						</div>
 					</div>
-					<div class="m-3 p-3">
+					<div class="m-3 p-3"> @*COSTS*@
 						<table id="BuildCost" width="100%">
 							<tr>
 								<td colspan="2" style="text-align:center;">Building Costs</td>
@@ -236,7 +249,7 @@
 							</tr>
 						</table>
 					</div>
-					<div class="d-flex flex-row-reverse m-3 p-3" style="min-height:100px;">
+					<div class="d-flex flex-row-reverse m-3 p-3" style="min-height:100px;"> @*DICES*@
 						@foreach (var dice in dices)
 						{
 							switch (dice)
@@ -262,7 +275,7 @@
 							}
 						}
 					</div>
-					<div class="d-flex flex-row-reverse ">
+					<div class="d-flex flex-row-reverse "> @* BUTTONS *@
 						<div class="p-2">
 							<button @onclick="EndTurn" disabled="@(!CanEndTurn())" style="margin:0px;border:0px;padding:0px;"> <img width="50" height="50" src="/images/dice/endturn.png" style="background-color:rgb(250,227,144);" /> </button>
 						</div>
@@ -276,6 +289,13 @@
 	</div>
 </div>
 
+<div>
+	@foreach (var tradeoffer in tradeOffers)
+	{
+		<p>@tradeoffer.Owner.Name</p> <button @onclick="()=>AcceptTradeOffer(tradeoffer.Id)"></button>
+	}
+	<button @onclick="SendTradeOffer"> Küldés</button>
+</div>
 <p>Hiba: @errorMessage</p>
 @code {
 
@@ -376,7 +396,7 @@
 		//Setting the connection string at server side
 		await SetConnectionString(hubConnection.ConnectionId!);
 		//GetMap from server
-		var response = await hubConnection!.InvokeAsync<string>("GetMap", Guid, CancellationToken.None);
+		var response = await hubConnection!.InvokeAsync<Map>("GetMap", Guid, CancellationToken.None);
 		await updateMapStatus(response);
 		//Change the group of the chat
 		await ChatComponent!.ChangeSignalRGroup(Guid);
@@ -392,15 +412,9 @@
 		PlayerList = response;
 	}
 
-	private async Task updateMapStatus(string mapstring)
+	private async Task updateMapStatus(Map newMap)
 	{
-		var options = new JsonSerializerOptions
-			{
-				MaxDepth = 1000,
-				ReferenceHandler = ReferenceHandler.Preserve,
-				IncludeFields = true
-			};
-		map = JsonSerializer.Deserialize<Map>(mapstring, options)!;
+		map = newMap;
 		hexagons.Clear();
 		cornerCircles.Clear();
 		edgeLines.Clear();
@@ -418,33 +432,59 @@
 	}
 	private void CreateHexagonMap(List<Field> fields)
 	{
-		for (int i = 0; i < 4; i++)
+		if (fields.Count==37)
 		{
-			hexagons.Add(new Hexagon(hexagonStartingX + i * hexagonSize * Math.Sqrt(3), hexagonStartingY, hexagonSize, fields[i]));
+			for (int i = 0; i < 4; i++)
+			{
+				hexagons.Add(new Hexagon(hexagonStartingX + i * hexagonSize * Math.Sqrt(3), hexagonStartingY, hexagonSize, fields[i]));
+			}
+			for (int i = 0; i < 5; i++)
+			{
+				hexagons.Add(new Hexagon(hexagons[0].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[0].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 4]));
+			}
+			for (int i = 0; i < 6; i++)
+			{
+				hexagons.Add(new Hexagon(hexagons[4].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[4].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 9]));
+			}
+			for (int i = 0; i < 7; i++)
+			{
+				hexagons.Add(new Hexagon(hexagons[9].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[9].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 15]));
+			}
+			for (int i = 0; i < 6; i++)
+			{
+				hexagons.Add(new Hexagon(hexagons[15].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[15].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 22]));
+			}
+			for (int i = 0; i < 5; i++)
+			{
+				hexagons.Add(new Hexagon(hexagons[22].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[22].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 28]));
+			}
+			for (int i = 0; i < 4; i++)
+			{
+				hexagons.Add(new Hexagon(hexagons[28].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[28].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 33]));
+			}
 		}
-		for (int i = 0; i < 5; i++)
+		else
 		{
-			hexagons.Add(new Hexagon(hexagons[0].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[0].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 4]));
-		}
-		for (int i = 0; i < 6; i++)
-		{
-			hexagons.Add(new Hexagon(hexagons[4].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[4].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 9]));
-		}
-		for (int i = 0; i < 7; i++)
-		{
-			hexagons.Add(new Hexagon(hexagons[9].vertices[2].X + i * hexagonSize * Math.Sqrt(3), hexagons[9].vertices[2].Y + hexagonSize, hexagonSize, fields[i + 15]));
-		}
-		for (int i = 0; i < 6; i++)
-		{
-			hexagons.Add(new Hexagon(hexagons[15].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[15].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 22]));
-		}
-		for (int i = 0; i < 5; i++)
-		{
-			hexagons.Add(new Hexagon(hexagons[22].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[22].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 28]));
-		}
-		for (int i = 0; i < 4; i++)
-		{
-			hexagons.Add(new Hexagon(hexagons[28].vertices[0].X + i * hexagonSize * Math.Sqrt(3), hexagons[28].vertices[0].Y + hexagonSize, hexagonSize, fields[i + 33]));
+			//első sor van előrébb
+			for (int i = 0; i < 10; i++)
+			{
+				hexagons.Add(new Hexagon(hexagonStartingX + i * hexagonSize * Math.Sqrt(3), hexagonStartingY, hexagonSize, fields[i]));
+			}
+			for (int i = 1; i < 9; i++)
+			{
+				for (int j = 0; j < 10; j++)
+				{
+					if (i % 2 == 0) 
+					{
+						hexagons.Add(new Hexagon(hexagons[(i - 1) * 10].vertices[2].X + j * hexagonSize * Math.Sqrt(3), hexagons[(i - 1) * 10].vertices[2].Y + hexagonSize, hexagonSize, fields[i * 10 + j]));
+					}
+					else
+					{
+						hexagons.Add(new Hexagon(hexagons[(i - 1) * 10].vertices[0].X + j * hexagonSize * Math.Sqrt(3), hexagons[(i - 1) * 10].vertices[0].Y + hexagonSize, hexagonSize, fields[i * 10 + j]));
+					}
+
+				}
+			}
 		}
 	}
 	private void CreateHexagonEdges()
@@ -486,9 +526,9 @@
 	private bool initialRoadTurn = false;
 	private void SetupHubConnectionEndpoints()
 	{
-		hubConnection!.On<string>("ProcessMap", async (mapstring) =>
+		hubConnection!.On<Map>("ProcessMap", async (map) =>
 		{
-			await updateMapStatus(mapstring);
+			await updateMapStatus(map);
 		});
 		hubConnection!.On("ResolveSevenRoll", () =>
 		{
@@ -582,14 +622,54 @@
 		});
 		hubConnection!.On("FetchTradeOffers", async () =>
 		{
-			var response = await hubConnection!.InvokeAsync<List<TradeOffer>?>("GetTradeOffers", Guid);
+			var response = await hubConnection!.InvokeAsync<List<string>?>("GetTradeOffers", Guid);
 			if (response is not null)
 			{
-				//Trade offerek listáját frissíteni
+				tradeOffers.Clear();
+				foreach (var tradeOfferString in response)
+				{
+					var options = new JsonSerializerOptions()
+						{
+							ReferenceHandler = ReferenceHandler.IgnoreCycles,
+							IncludeFields = true
+						};
+					var tradeOffer = JsonSerializer.Deserialize<TradeOffer>(tradeOfferString, options);
+					if (tradeOffer is not null)
+					{
+						tradeOffers.Add(tradeOffer);
+					}
+				}
 			}	
 			StateHasChanged();
 		});
 
+	}
+	private List<TradeOffer> tradeOffers = new List<TradeOffer>();
+	private async Task AcceptTradeOffer(int id)
+	{
+		var tradeOffer = tradeOffers.First(t => t.Id == id);
+		var options = new JsonSerializerOptions()
+			{
+				ReferenceHandler = ReferenceHandler.IgnoreCycles,
+				IncludeFields = true
+			};
+		var serializedTradeOffer = JsonSerializer.Serialize(tradeOffer, options);
+		await hubConnection!.SendAsync("AcceptTradeOffer", actor, Guid, serializedTradeOffer);
+	}
+	private async Task SendTradeOffer()
+	{
+		var offer = new AbstractInventory();
+		offer.AddResource(Resources.Wood, 3);
+		var goal = new AbstractInventory();
+		goal.AddResource(Resources.Ore, 3);
+		var tradeOffer = new TradeOffer(PlayerList.First(p => p.Name == actor.Name), offer, goal);
+		var options = new JsonSerializerOptions()
+			{
+				ReferenceHandler = ReferenceHandler.IgnoreCycles,
+				IncludeFields = true
+			};
+		var serializedTradeOffer = JsonSerializer.Serialize(tradeOffer, options);
+		await hubConnection!.SendAsync("SendTradeOffer", actor, Guid, serializedTradeOffer);
 	}
 	private int[] dices = new int[2];
 	private async Task SetConnectionString(string conID)
@@ -608,7 +688,7 @@
 	{
 		if (initialVillageTurn)
 		{
-			await hubConnection!.SendAsync("ClaimInitialVillage", actor, Guid, id);
+			await hubConnection!.SendAsync("BuildInitialVillage", actor, Guid, id);
 		}
 		else if (ownTurn)
 		{
@@ -620,7 +700,7 @@
 	{
 		if (initialRoadTurn)
 		{
-			await hubConnection!.SendAsync("ClaimInitialRoad", actor, Guid, id);
+			await hubConnection!.SendAsync("BuildInitialRoad", actor, Guid, id);
 		}
 		else if (ownTurn)
 		{
