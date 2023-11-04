@@ -18,10 +18,11 @@ using Newtonsoft.Json.Linq;
 using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Model.GameMap;
 using Microsoft.Extensions.Options;
+using Azure;
 
 namespace Catan.Server.Hubs
 {
-    [Authorize]
+	[Authorize]
 	public class GameHub : Hub
 	{
 		private readonly IGameService _gameService;
@@ -48,11 +49,11 @@ namespace Catan.Server.Hubs
 				throw new Exception("Using other player's name");
 			}
 			var success = _gameService.RegisterPlayerConnectionId(Guid.Parse(guidstring), actor.Name, conId);
-			if (success== GameServiceResponses.GameCanStart)
+			if (success == GameServiceResponses.GameCanStart)
 			{
 				Guid guid = Guid.Parse(guidstring);
-				_gameService.StartGame(guid);
-				await Clients.Group(guid.ToString()).SendAsync("ProcessCurrentPlayer",GetCurrentPlayer(guidstring));
+				_gameService.StartGame(guid); //TODO response handling
+				await Clients.Group(guid.ToString()).SendAsync("ProcessCurrentPlayer", GetCurrentPlayer(guidstring));
 				await CallNextPlayer(guid);
 			}
 		}
@@ -60,21 +61,28 @@ namespace Catan.Server.Hubs
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
-				throw new Exception("Using other player's name");
+				await Clients.Caller.SendAsync("ProcessErrorMessage", "Using other player's name");
+				return;
 			}
-			if (actor.Name !=GetCurrentPlayer(guidstring))
+			if (actor.Name != GetCurrentPlayer(guidstring))
 			{
-				throw new Exception("You can't end your turn during someone else's turn");
+				await Clients.Caller.SendAsync("ProcessErrorMessage", "You can't end your turn during someone else's turn");
+				return;
 			}
 			Guid guid = Guid.Parse(guidstring);
-			var response = _gameService.EndPlayerTurn(guid,actor.Name); //TODO response handling
+			var response = _gameService.EndPlayerTurn(guid, actor.Name);
+			if (response != GameServiceResponses.Success)
+			{
+				await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+				return;
+			}
 			await Clients.Caller.SendAsync("TurnEnded");
 			await CallNextPlayer(guid);
 		}
 		public int[] GetLatestRolledBaseDices(string guidstring)
 		{
 			Guid guid = Guid.Parse(guidstring);
-			var dices= _gameService.GetLastRolledDices(guid);
+			var dices = _gameService.GetLastRolledDices(guid);
 			if (dices is null)
 			{
 				throw new Exception("null");
@@ -93,38 +101,31 @@ namespace Catan.Server.Hubs
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
-				throw new Exception("Using other player's name");
+				await Clients.Caller.SendAsync("ProcessErrorMessage", "Using other player's name");
+				return;
 			}
 			if (actor.Name != GetCurrentPlayer(guidstring))
 			{
-				throw new Exception("You can't roll dices during someone else's turn");
+				await Clients.Caller.SendAsync("ProcessErrorMessage", "You can't end your turn during someone else's turn");
+				return;
 			}
 			Guid guid = Guid.Parse(guidstring);
-			var response = _gameService.RollDices(guid, actor.Name); //TODO response handling
-
-			var dices = GetLatestRolledBaseDices(guidstring);
-			if (dices is not null)
+			var response = _gameService.RollDices(guid, actor.Name);
+			if (response != GameServiceResponses.Success)
 			{
-				int sum = 0;
-				foreach (var dice in dices)
-				{
-					sum += dice;
-				}
-				if (sum == 7)
-				{
-					ResolveDiceRollSeven(guid);
-				}
-				await Clients.Caller.SendAsync("DiceRolled");
-				await Clients.Group(guid.ToString()).SendAsync("ProcessDiceRolled");
-				await Clients.Group(guid.ToString()).SendAsync("FetchResources");
+				await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+				return;
 			}
-			else
+			var dices = GetLatestRolledBaseDices(guidstring) ?? throw new Exception("Something went wrong with getting the rolled dices");
+			if (dices.Sum()==7)
 			{
-				throw new Exception("Something went wrong with dice rolling");
+				ResolveDiceRollSeven(guid);
 			}
-			
+			await Clients.Caller.SendAsync("DiceRolled");
+			await Clients.Group(guid.ToString()).SendAsync("ProcessDiceRolled");
+			await Clients.Group(guid.ToString()).SendAsync("FetchResources");
 		}
-		private void ResolveDiceRollSeven(Guid guid)
+		private void ResolveDiceRollSeven(Guid guid) //TODO
 		{
 			var conIDsWithSevenOrMoreResources = _gameService.GetPlayersConnectionIdWithSevenOrMoreResources(guid);
 			if (conIDsWithSevenOrMoreResources is not null)
@@ -156,8 +157,13 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("Using other player's name");
 			}
-			Guid guid=Guid.Parse(guidstring);
-			var response = _gameService.ThrowResources(guid, inventory, actor.Name); //TODO response handling
+			Guid guid = Guid.Parse(guidstring);
+			var response = _gameService.ThrowResources(guid, inventory, actor.Name);
+			if (response != GameServiceResponses.Success)
+			{
+				await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+				return;
+			}
 			await NotifyClients(Guid.Parse(guidstring));
 		}
 		public Map GetMap(string guidstring)
@@ -200,14 +206,39 @@ namespace Catan.Server.Hubs
 				await Clients.Client(connection).SendAsync("TakeNormalTurn");
 			}
 		}
-		public async Task BuildInitialVillage(Actor actor,string guidstring,int id)
+		public async Task BuildInitialVillage(Actor actor, string guidstring, int id)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
 				throw new Exception("Using other player's name");
 			}
-			Guid guid= Guid.Parse(guidstring);
-			if (_gameService.IsInitialRound(guid)==GameServiceResponses.NotInitialRound)
+			Guid guid = Guid.Parse(guidstring);
+			if (_gameService.IsInitialRound(guid) == GameServiceResponses.NotInitialRound)
+			{
+				throw new Exception("It's not starting round");
+			}
+			var playerName = _gameService.GetActivePlayerName(guid) ?? throw new Exception("active player is null");
+			if (playerName.CompareTo(actor.Name) == 0)
+			{
+				var response = _gameService.BuildInitialVillage(guid, id, actor.Name);
+				if (response != GameServiceResponses.Success)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+					return;
+				}
+				await NotifyMapChanged(guid);
+				await NotifyClients(guid);
+				await Clients.Caller.SendAsync("PlaceInitialRoad");
+			}
+		}
+		public async Task BuildInitialRoad(Actor actor, string guidstring, int id)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			if (_gameService.IsInitialRound(guid) == GameServiceResponses.NotInitialRound)
 			{
 				throw new Exception("It's not starting round");
 			}
@@ -216,58 +247,28 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("active player is null");
 			}
-            if (playerName.CompareTo(actor.Name)==0)
+			if (playerName == actor.Name)
 			{
-				try
+				var response = _gameService.BuildInitialRoad(guid, id, actor.Name);
+				if (response != GameServiceResponses.Success)
 				{
-					var response = _gameService.BuildInitialVillage(guid, id, actor.Name); //TODO response handling
-					await NotifyMapChanged(guid);
-					await NotifyClients(guid);
-					await Clients.Caller.SendAsync("PlaceInitialRoad");
-				}
-				catch (Exception e)
-				{
-					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
-				}
-			}
-		}
-		public async Task BuildInitialRoad(Actor actor, string guidstring,int id)
-		{
-			if (!ActorIdentity.CheckActorIdentity(actor))
-			{
-				throw new Exception("Using other player's name");
-			}
-			Guid guid= Guid.Parse(guidstring);
-			if (_gameService.IsInitialRound(guid) == GameServiceResponses.NotInitialRound)
-			{
-				throw new Exception("It's not starting round");
-			}
-            var playerName = _gameService.GetActivePlayerName(guid);
-            if (playerName is null)
-            {
-                throw new Exception("active player is null");
-            }
-            if (playerName == actor.Name)
-			{
-				try
-				{
-					var response = _gameService.BuildInitialRoad(guid, id, actor.Name); //TODO response handling
-					await NotifyMapChanged(guid);
-					await Clients.Caller.SendAsync("InitialTurnDone");
-				}
-				catch (Exception e)
-				{
-					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
 					return;
 				}
-				var response2 = _gameService.EndPlayerTurn(guid, actor.Name); //TODO response handling
+				await NotifyMapChanged(guid);
+				await Clients.Caller.SendAsync("InitialTurnDone");
+				response = _gameService.EndPlayerTurn(guid, actor.Name);
+				if (response != GameServiceResponses.Success)
+				{
+					throw new Exception("Something went wrong with turn ending");
+				}
 				await CallNextPlayer(guid);
 				await NotifyClients(guid);
 			}
 		}
 		private async Task NotifyClients(Guid guid)
 		{
-			await Clients.Group(guid.ToString()).SendAsync("ProcessCurrentPlayer",GetCurrentPlayer(guid.ToString()));
+			await Clients.Group(guid.ToString()).SendAsync("ProcessCurrentPlayer", GetCurrentPlayer(guid.ToString()));
 			await Clients.Group(guid.ToString()).SendAsync("FetchResources");
 		}
 		private async Task NotifyTradeOffersChanged(Guid guid)
@@ -294,21 +295,18 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("active player is null");
 			}
-            if (playerName  == actor.Name)
+			if (playerName == actor.Name)
 			{
-				try
+				var response = _gameService.BuildVillage(guid, id, actor.Name);
+				if (response != GameServiceResponses.Success)
 				{
-					var response = _gameService.BuildVillage(guid, id, actor.Name); //TODO response handling
-					await NotifyMapChanged(guid);
-					await NotifyClients(guid);
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+					return;
 				}
-				catch (Exception e)
-				{
-					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
-				}
+				await NotifyMapChanged(guid);
+				await NotifyClients(guid);
 			}
 		}
-
 		public async Task BuildCity(Actor actor, string guidstring, int id)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
@@ -329,20 +327,16 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("Not Active player");
 			}
-			try
+			var response = _gameService.BuildCity(guid, id, actor.Name);
+			if (response != GameServiceResponses.Success)
 			{
-				var response = _gameService.BuildCity(guid, id, actor.Name); //TODO response handling
-				await NotifyMapChanged(guid);
-				await NotifyClients(guid);
+				await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+				return;
 			}
-			catch (Exception e)
-			{
-				await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
-			}
+			await NotifyMapChanged(guid);
+			await NotifyClients(guid);
 		}
-
-
-		public async Task BuildRoad(Actor actor, string guidstring, int id) //TODO buildship
+		public async Task BuildRoad(Actor actor, string guidstring, int id)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -353,24 +347,41 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("It's starting round");
 			}
-			var playerName = _gameService.GetActivePlayerName(guid);
-			if (playerName is null)
+			var playerName = _gameService.GetActivePlayerName(guid) ?? throw new Exception("active player is null");
+			if (playerName == actor.Name)
 			{
-				throw new Exception("active player is null");
-			}
-            if (playerName == actor.Name)
-			{
-				try
+				var response = _gameService.BuildRoad(guid, id, actor.Name);
+				if (response != GameServiceResponses.Success)
 				{
-					var response = _gameService.BuildRoad(guid, id, actor.Name); //TODO response handling
-					await NotifyMapChanged(guid);
-					await NotifyClients(guid);
-				}
-				catch (Exception e)
-				{
-					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
 					return;
 				}
+				await NotifyMapChanged(guid);
+				await NotifyClients(guid);
+			}
+		}
+		public async Task BuildShip(Actor actor, string guidstring, int id)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			if (_gameService.IsInitialRound(guid) == GameServiceResponses.InitialRound)
+			{
+				throw new Exception("It's starting round");
+			}
+			var playerName = _gameService.GetActivePlayerName(guid) ?? throw new Exception("active player is null");
+			if (playerName == actor.Name)
+			{
+				var response = _gameService.BuildShip(guid, id, actor.Name);
+				if (response != GameServiceResponses.Success)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+					return;
+				}
+				await NotifyMapChanged(guid);
+				await NotifyClients(guid);
 			}
 		}
 		public FetchInventoryDTO GetPlayersInventories(Actor actor, string guidstring)
@@ -380,9 +391,9 @@ namespace Catan.Server.Hubs
 				throw new Exception("Using other player's name");
 			}
 			Guid guid = Guid.Parse(guidstring);
-			FetchInventoryDTO result=new FetchInventoryDTO();
-			result.Inventory = _gameService.GetPlayersInventory(guid,actor.Name) ?? throw new Exception("refactorme, no inventory");
-			result.OthersInventory=_gameService.GetOtherPlayersInventory(guid,actor.Name) ?? throw new Exception("refactorme, no other inventory");
+			FetchInventoryDTO result = new FetchInventoryDTO();
+			result.Inventory = _gameService.GetPlayersInventory(guid, actor.Name) ?? throw new Exception("refactorme, no inventory");
+			result.OthersInventory = _gameService.GetOtherPlayersInventory(guid, actor.Name) ?? throw new Exception("refactorme, no other inventory");
 			return result;
 		}
 		public List<Player> GetPlayerList(Actor actor, string guidstring)
@@ -406,26 +417,22 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("active player is null");
 			}
-            if (playerName == actor.Name)
+			if (playerName == actor.Name)
 			{
-				try
+				var response = _gameService.MoveRobber(guid, id, actor.Name!);
+				if (response != GameServiceResponses.Success)
 				{
-					var response = _gameService.MoveRobber(guid, id, actor.Name!); //TODO response handling
-					await NotifyMapChanged(guid);
-					await NotifyClients(guid);
-					await Clients.Caller.SendAsync("RobberMovementResolved");
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+					return;
 				}
-				catch (Exception e)
-				{
-					await Clients.Caller.SendAsync("ProcessErrorMessage", e.Message);
-				}
+				await NotifyMapChanged(guid);
+				await NotifyClients(guid);
+				await Clients.Caller.SendAsync("RobberMovementResolved");
 			}
 		}
-		
-
 		public List<TradeOffer>? GetTradeOffers(string guidstring)
 		{
-			var tradeOffers= _gameService.GetTradeOffers(Guid.Parse(guidstring));
+			var tradeOffers = _gameService.GetTradeOffers(Guid.Parse(guidstring));
 			return tradeOffers;
 		}
 		public async Task SendTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer)
@@ -444,17 +451,26 @@ namespace Catan.Server.Hubs
 			}
 			if (tradeOffer.ToPlayers)
 			{
-				var response = _gameService.RegisterTradeOffer(Guid.Parse(guidstring), tradeOffer); //TODO response handling
+				var response = _gameService.RegisterTradeOffer(Guid.Parse(guidstring), tradeOffer);
+				if (response != GameServiceResponses.Success)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+					return;
+				}
 				await NotifyTradeOffersChanged(new Guid(guidstring));
 			}
 			else
 			{
-				var response = _gameService.RegisterTradeOfferWithBank(Guid.Parse(guidstring), tradeOffer); //TODO response handling
+				var response = _gameService.RegisterTradeOfferWithBank(Guid.Parse(guidstring), tradeOffer);
+				if (response != GameServiceResponses.Success)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+					return;
+				}
 			}
-			
 			await NotifyClients(Guid.Parse(guidstring));
 		}
-		public async Task AcceptTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer) //TODO kliens oldalról még indítani kell
+		public async Task AcceptTradeOffer(Actor actor, string guidstring, TradeOffer tradeOffer)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -468,7 +484,12 @@ namespace Catan.Server.Hubs
 			{
 				throw new Exception("Trade offer is null");
 			}
-			var response = _gameService.AcceptTradeOffer(Guid.Parse(guidstring), tradeOffer, actor.Name); //TODO response handling
+			var response = _gameService.AcceptTradeOffer(Guid.Parse(guidstring), tradeOffer, actor.Name);
+			if (response != GameServiceResponses.Success)
+			{
+				await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+				return;
+			}
 			await NotifyClients(Guid.Parse(guidstring));
 			await NotifyTradeOffersChanged(new Guid(guidstring));
 		}

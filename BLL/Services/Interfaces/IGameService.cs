@@ -44,7 +44,7 @@ namespace BLL.Services.Interfaces
         public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name);
 
         public GameServiceResponses ThrowResources(Guid guid, AbstractInventory thrownResources, string name);
+        public GameServiceResponses BuildShip(Guid guid, int id, string name);
 
-        
 	}
 }

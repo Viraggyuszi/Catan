@@ -363,5 +363,19 @@ namespace BLL.Services.Implementations
 			}
 			return handler.ExecuteDiceRollAction(game, name);
         }
-    }
+		public GameServiceResponses BuildShip(Guid guid, int id, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuildInitialShipAction(game, id, name);
+		}
+	}
 }

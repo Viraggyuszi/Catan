@@ -40,6 +40,14 @@ namespace BLL.GameActions
 		public required IDiceRollAction? RollDiceAction { private get; init; }
         public required IBuildShipAction? BuildShipAction { private get; init; }
 
+        public GameServiceResponses ExecuteBuildShipAction(Game game, int edgeId, string name)
+        {
+            if (BuildShipAction is null)
+            {
+                return GameServiceResponses.ForbiddenAction;
+            }
+            return BuildShipAction.Execute(game, edgeId, name);
+        }
 		public GameServiceResponses ExecuteBuildInitialShipAction(Game game, int cornerId, string name)
 		{
 			if (BuildInitialShipAction is null)

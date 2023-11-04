@@ -37,6 +37,19 @@ namespace BLL.GameActions.BuildInitialShipAction.Implementations
 			game.ActivePlayerCanPlaceInitialRoad = false;
 			edge.Owner = game.ActivePlayer;
 			edge.EdgeType = EdgeType.Ship;
+
+			var inventory = game.ActivePlayer.Inventory;
+			foreach (var corner in edge.Corners)
+			{
+				foreach (var field in corner.Fields)
+				{
+					if (field.Type == TerrainType.Unknown)
+					{
+						field.RevealField();
+						inventory.AddResource(field.Type, 1);
+					}
+				}
+			}
 			return GameServiceResponses.Success;
 		}
 
