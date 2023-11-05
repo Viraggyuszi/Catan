@@ -36,7 +36,7 @@ namespace BLL.GameActions.PlayCardAction.Implementations
 			{
 				case CardType.Knight:
 					game.RobberNeedsMove = true;
-					game.ActivePlayer.KnightForce += 1; //TODO legnagyobb lovagi hatalom
+					game.ActivePlayer.KnightForce += 1;
 					if (game.ActivePlayer.KnightForce > game.BiggestKnightForce.KnightForce)
 					{
 						game.BiggestKnightForce.Points -= 2;

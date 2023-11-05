@@ -198,15 +198,15 @@
 							}
 							if (edgeLine.Edge.EdgeType==EdgeType.Ship)
 							{
-								@*TODO HAJÓ KIRAJZOLÁS*@
-								<polygon points=@edgeLine.VerticesToString() fill="@edgeLine.Edge.Owner.Color" fill-opacity="0.5" stroke="yellow" stroke-width="2" stroke-opacity="0.9"
+								<polygon points=@edgeLine.VerticesToString() fill="@edgeLine.Edge.Owner.Color" fill-opacity="1" stroke="black" stroke-width="1" stroke-opacity="0.9"
 								@onclick="()=>ClickOnEdgeLine(edgeLine.Edge.Id)" />
 							}
 							
 						}
 						else
 						{
-							if (initialRoadTurn || makingRoad)
+							@*TODO ELLENŐRZÉS HOVA LEHET MÉG RAKNI DOLGOKAT*@
+							if (initialRoadTurn || makingRoad || makingShip)
 							{
 								<polygon points=@edgeLine.VerticesToString() fill="black" fill-opacity="0" stroke="green" stroke-width="2" stroke-opacity="0.9"
 							 @onclick="()=>ClickOnEdgeLine(edgeLine.Edge.Id)" />
@@ -434,8 +434,12 @@
 	}
 </div>
 
-<p>Hiba: @errorMessage</p>
+<button @onclick="BuyCard"> Kártya</button>
+
 @code {
+
+
+
 	private AbstractInventory throwResourcesInventory = new AbstractInventory();
 
 	private AbstractInventory ownerTradeOfferInventory = new AbstractInventory();
@@ -690,13 +694,21 @@
 
 	private void SetupHubConnectionEndpoints()
 	{
+		hubConnection!.On("FetchCards", async () =>
+		{
+			var response = await hubConnection!.InvokeAsync<CardInventory?>("GetCards", actor, Guid);
+			if (response is not null)
+			{
+				//TODO megjeleníteni a kártyákat
+			}
+		});
 		hubConnection!.On<Map>("ProcessMap", async (map) =>
 		{
 			await updateMapStatus(map);
 		});
 		hubConnection!.On("ResolveSevenRoll", () =>
 		{
-			resolveSevenOrMoreResources = true; //TODO meg kell jeleníteni egy gui-s részt, ahol be lehet kattingatni, hogy miket akarsz eldobálni
+			resolveSevenOrMoreResources = true;
 			haveToThrowResources = true;
 			StateHasChanged();
 		});
@@ -878,7 +890,7 @@
 			}
 			if (makingShip)
 			{
-				await hubConnection!.SendAsync("BuildInitialShip", actor, Guid, id);
+				await hubConnection!.SendAsync("BuildShip", actor, Guid, id);
 			}
 		}
 		else if (ownTurn)
@@ -928,5 +940,10 @@
 			return true;
 		}
 		return false;
+	}
+
+	private async Task BuyCard()
+	{
+		await hubConnection!.SendAsync("BuyCard", actor, Guid);
 	}
 }

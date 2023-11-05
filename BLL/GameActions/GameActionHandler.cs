@@ -6,8 +6,10 @@ using BLL.GameActions.BuildInitialVillageAction;
 using BLL.GameActions.BuildRoadAction;
 using BLL.GameActions.BuildShipAction;
 using BLL.GameActions.BuildVillageAction;
+using BLL.GameActions.BuyCardAction;
 using BLL.GameActions.EndTurnAction;
 using BLL.GameActions.MoveRobberAction;
+using BLL.GameActions.PlayCardAction;
 using BLL.GameActions.RegisterTradeOfferAction;
 using BLL.GameActions.RegisterTradeOfferWithBankAction;
 using BLL.GameActions.RollDiceAction;
@@ -39,8 +41,27 @@ namespace BLL.GameActions
 		public required IThrowResourcesAction? ThrowResourcesAction { private get; init; }
 		public required IDiceRollAction? RollDiceAction { private get; init; }
         public required IBuildShipAction? BuildShipAction { private get; init; }
+        public required IBuyCardAction? BuyCardAction { private get; init; }
+        public required IPlayCardAction? PlayCardAction { private get; init; }
 
-        public GameServiceResponses ExecuteBuildShipAction(Game game, int edgeId, string name)
+		public GameServiceResponses ExecuteBuyCardAction(Game game, string name)
+		{
+			if (BuyCardAction is null)
+			{
+				return GameServiceResponses.ForbiddenAction;
+			}
+			return BuyCardAction.Execute(game, name);
+		}
+		public GameServiceResponses ExecutePlayCardAction(Game game, CardType card, string name)
+		{
+			if (PlayCardAction is null)
+			{
+				return GameServiceResponses.ForbiddenAction;
+			}
+            return PlayCardAction.Execute(game, card, name);
+		}
+
+		public GameServiceResponses ExecuteBuildShipAction(Game game, int edgeId, string name)
         {
             if (BuildShipAction is null)
             {

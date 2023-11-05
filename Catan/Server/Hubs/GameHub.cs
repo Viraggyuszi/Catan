@@ -19,6 +19,7 @@ using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Model.GameMap;
 using Microsoft.Extensions.Options;
 using Azure;
+using System;
 
 namespace Catan.Server.Hubs
 {
@@ -533,6 +534,35 @@ namespace Catan.Server.Hubs
 			}
 			await NotifyClients(Guid.Parse(guidstring));
 			await NotifyTradeOffersChanged(new Guid(guidstring));
+		}
+		public CardInventory? GetCards(Actor actor, string guidstring)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			return _gameService.GetCards(guid, actor.Name);
+		}
+		public async Task BuyCard(Actor actor, string guidstring)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			var playerName = _gameService.GetActivePlayerName(guid) ?? throw new Exception("active player is null");
+			if (playerName == actor.Name)
+			{
+				var response = _gameService.BuyCard(guid, playerName);
+				if (response != GameServiceResponses.Success)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+					return;
+				}
+				await NotifyClients(guid);
+				await Clients.Caller.SendAsync("FetchCards");
+			}
 		}
 	}
 }

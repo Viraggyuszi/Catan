@@ -251,6 +251,20 @@ namespace BLL.Services.Implementations
 			}
 			return handler.ExecuteBuildRoadAction(game, id, name);
 		}
+		public GameServiceResponses BuildShip(Guid guid, int id, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuildShipAction(game, id, name);
+		}
 		public GameServiceResponses BuildInitialVillage(Guid guid, int id, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
@@ -377,7 +391,7 @@ namespace BLL.Services.Implementations
 			}
 			return handler.ExecuteDiceRollAction(game, name);
         }
-		public GameServiceResponses BuildShip(Guid guid, int id, string name)
+		public GameServiceResponses BuyCard(Guid guid, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
@@ -389,8 +403,23 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.HandlerDoesntExist;
 			}
-			return handler.ExecuteBuildInitialShipAction(game, id, name);
+			return handler.ExecuteBuyCardAction(game, name);
 		}
+		public GameServiceResponses PlayCard(Guid guid, CardType card, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecutePlayCardAction(game, card, name);
+		}
+
 
 		public bool? HaveToThrowResources(Guid guid)
 		{
@@ -400,6 +429,21 @@ namespace BLL.Services.Implementations
 				return null;
 			}
 			return game.ResolveResourceCount;
+		}
+        
+		public CardInventory? GetCards(Guid guid, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return null;
+			}
+			var player = game.PlayerList.First(p => p.Name == name);
+			if (player is null)
+			{
+				return null;
+			}
+			return player.CardInventory;
 		}
 	}
 }

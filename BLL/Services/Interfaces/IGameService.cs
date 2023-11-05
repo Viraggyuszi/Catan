@@ -48,5 +48,9 @@ namespace BLL.Services.Interfaces
         public GameServiceResponses BuildShip(Guid guid, int id, string name);
 
         public bool? HaveToThrowResources(Guid guid);
+
+        public GameServiceResponses BuyCard(Guid guid, string name);
+        public GameServiceResponses PlayCard(Guid guid, CardType card, string name);
+        public CardInventory? GetCards(Guid guid, string name);
 	}
 }

@@ -6,8 +6,10 @@ using BLL.GameActions.BuildInitialVillageAction.Implementations;
 using BLL.GameActions.BuildRoadAction.Implementations;
 using BLL.GameActions.BuildShipAction.Implementations;
 using BLL.GameActions.BuildVillageAction.Implementations;
+using BLL.GameActions.BuyCardAction.Implementations;
 using BLL.GameActions.EndTurnAction.Implementations;
 using BLL.GameActions.MoveRobberAction.Implementations;
+using BLL.GameActions.PlayCardAction.Implementations;
 using BLL.GameActions.RegisterTradeOfferAction.Implementations;
 using BLL.GameActions.RegisterTradeOfferWithBankAction.Implementations;
 using BLL.GameActions.RollDiceAction.Implementations;
@@ -62,7 +64,9 @@ namespace BLL.GameActions
                 RegisterTradeOfferWithBankAction = new BaseRegisterTradeOfferWithBankAction(),
                 ThrowResourcesAction = new BaseThrowResourcesAction(),
                 BuildShipAction = null,
-                BuildInitialShipAction = null
+                BuildInitialShipAction = null,
+                BuyCardAction = new BaseBuyCardAction(),
+                PlayCardAction = new BasePlayCardAction()
             };
             return result;
         }
@@ -83,7 +87,9 @@ namespace BLL.GameActions
                 RegisterTradeOfferWithBankAction = new BaseRegisterTradeOfferWithBankAction(),
                 ThrowResourcesAction = new BaseThrowResourcesAction(),
                 BuildShipAction = new SeafarerBuildShipAction(),
-                BuildInitialShipAction=new SeafarerBuildInitialShipAction()
+                BuildInitialShipAction=new SeafarerBuildInitialShipAction(),
+				BuyCardAction = new BaseBuyCardAction(),
+				PlayCardAction = new BasePlayCardAction()
 			};
 			return result;
 		}
