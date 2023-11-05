@@ -159,7 +159,7 @@
 					{
 						if (cornerCircle.Corner.Level == 0)
 						{
-							if (initialVillageTurn || makingSettlement)
+							if (makingSettlement)
 							{
 								<circle class="cornerCircle" cx="@DoubleToString(cornerCircle.BaseVertex.X)" cy="@DoubleToString(cornerCircle.BaseVertex.Y)" r="10"
 							@onclick="()=>ClickOnCornerCircle(cornerCircle.Corner.Id)" fill="black" fill-opacity="0" stroke="green" stroke-width="2" stroke-opacity="0.9" />
@@ -206,7 +206,7 @@
 						else
 						{
 							@*TODO ELLENŐRZÉS HOVA LEHET MÉG RAKNI DOLGOKAT*@
-							if (initialRoadTurn || makingRoad || makingShip)
+							if (makingRoad || makingShip)
 							{
 								<polygon points=@edgeLine.VerticesToString() fill="black" fill-opacity="0" stroke="green" stroke-width="2" stroke-opacity="0.9"
 							 @onclick="()=>ClickOnEdgeLine(edgeLine.Edge.Id)" />
@@ -435,7 +435,9 @@
 </div>
 
 <button @onclick="BuyCard"> Kártya</button>
+<button @onclick="()=>PlayCard(CardType.Knight)"> play knight</button>
 
+<p>@errorMessage</p>
 @code {
 
 
@@ -444,7 +446,7 @@
 
 	private AbstractInventory ownerTradeOfferInventory = new AbstractInventory();
 	private AbstractInventory targetTradeOfferInventory = new AbstractInventory();
-	private bool makingSettlement = false; //TODO
+	private bool makingSettlement = false;
 	private bool makingRoad = false;
 	private bool makingCity = false;
 	private bool makingShip = false;
@@ -676,8 +678,8 @@
 	private bool resolveSevenOrMoreResources = false;
 	private bool resolveRobberMovement = false;
 	private bool creatingTradeOffer = false;
-	private bool initialVillageTurn = false;
-	private bool initialRoadTurn = false;
+	private bool initialVillageTurn = false; //TODO use
+	private bool initialRoadTurn = false; //TODO use
 
 	private async Task ThrowResources()
 	{
@@ -908,7 +910,7 @@
 	}
 	private async Task ClickOnHexagon(int id)
 	{
-		if (ownTurn && resolveRobberMovement)
+		if (ownTurn)
 		{
 			await hubConnection!.SendAsync("MoveRobber", actor, Guid, id);
 		}
@@ -945,5 +947,9 @@
 	private async Task BuyCard()
 	{
 		await hubConnection!.SendAsync("BuyCard", actor, Guid);
+	}
+	private async Task PlayCard(CardType card)
+	{
+		await hubConnection!.SendAsync("PlayCard", actor, Guid, card);
 	}
 }

@@ -564,5 +564,25 @@ namespace Catan.Server.Hubs
 				await Clients.Caller.SendAsync("FetchCards");
 			}
 		}
+		public async Task PlayCard(Actor actor, string guidstring, CardType card)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			var playerName = _gameService.GetActivePlayerName(guid) ?? throw new Exception("active player is null");
+			if (playerName == actor.Name)
+			{
+				var response = _gameService.PlayCard(guid, card, playerName);
+				if (response != GameServiceResponses.Success)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+					return;
+				}
+				await NotifyClients(guid);
+				await Clients.Caller.SendAsync("FetchCards");
+			}
+		}
 	}
 }
