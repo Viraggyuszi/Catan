@@ -16,6 +16,10 @@ namespace BLL.GameActions.BuildCityAction.Implementations
 			{
 				return GameServiceResponses.ActorIsNotActivePlayer;
 			}
+			if (game.HaveToRollDices)
+			{
+				return GameServiceResponses.RollDicesFirst;
+			}
 			if (game.ResolveResourceCount || game.RobberNeedsMove)
 			{
 				return GameServiceResponses.CantPlaceCornerAtTheMoment;

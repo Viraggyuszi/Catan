@@ -17,6 +17,10 @@ namespace BLL.GameActions.BuildRoadAction.Implementations
 			{
 				return GameServiceResponses.InvalidMember;
 			}
+			if (game.HaveToRollDices)
+			{
+				return GameServiceResponses.RollDicesFirst;
+			}
 			if (game.ResolveResourceCount || game.RobberNeedsMove)
 			{
 				return GameServiceResponses.CantPlaceEdgeAtTheMoment;

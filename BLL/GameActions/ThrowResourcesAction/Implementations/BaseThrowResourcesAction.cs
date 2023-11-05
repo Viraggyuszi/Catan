@@ -19,6 +19,10 @@ namespace BLL.GameActions.ThrowResourcesAction.Implementations
             {
                 return GameServiceResponses.InvalidMember;
             }
+            if (game.HaveToRollDices)
+            {
+                return GameServiceResponses.RollDicesFirst;
+            }
             if (player.Inventory.GetAllResourcesCount() / 2 == thrownResources.GetAllResourcesCount())
             {
                 if (!player.Inventory.HasSufficientResources(thrownResources))
@@ -26,7 +30,7 @@ namespace BLL.GameActions.ThrowResourcesAction.Implementations
                     return GameServiceResponses.InvalidResourcesHaveBeenThrown;
                 }
                 player.Inventory.RemoveResources(thrownResources);
-                game.PlayersWithSevenOrMoreResources.Remove(player);
+                game.PlayersWithSevenOrMoreResources.Remove(game.PlayersWithSevenOrMoreResources.First(p=>p.Name==player.Name));
                 if (game.PlayersWithSevenOrMoreResources.Count() == 0)
                 {
                     game.ResolveResourceCount = false;

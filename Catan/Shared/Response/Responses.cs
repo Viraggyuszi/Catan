@@ -31,6 +31,8 @@ namespace Catan.Shared.Response
     }
     public enum GameServiceResponses
     {
+        RollDicesFirst,
+        DicesAlreadyRolled,
         HandlerDoesntExist,
         DontHaveCard,
 		OutOfCards,
@@ -72,6 +74,9 @@ namespace Catan.Shared.Response
         BadResourceCountForTradingWithBank,
         NotEnoughResourceThrown,
         InvalidResourcesHaveBeenThrown,
-        SuccessWithSevenRoll
+        SuccessWithSevenRoll,
+		MoveRobberFirst,
+		ResolveSevenRollsFirst,
+		ResolveFreeRoadBuildingFirst
 	}
 }

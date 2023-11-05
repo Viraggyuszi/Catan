@@ -18,6 +18,10 @@ namespace BLL.GameActions.BuyCardAction.Implementations
 			{
 				return GameServiceResponses.ActorIsNotActivePlayer;
 			}
+			if (game.HaveToRollDices)
+			{
+				return GameServiceResponses.RollDicesFirst;
+			}
 			if (game.ResolveResourceCount || game.RobberNeedsMove)
 			{
 				return GameServiceResponses.CantBuyCardsAtTheMoment;

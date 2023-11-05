@@ -16,60 +16,60 @@ namespace Catan.Shared.Model.GameState.Inventory
         }
         public Dictionary<Resources, int> GetResources()
         {
-            return inventory;
+            return Inventory;
         }
         public bool HasEnoughForCard()
         {
-            return inventory[Resources.Ore] >= 1 && inventory[Resources.Wheat] >= 1 && inventory[Resources.Sheep] >= 1;
+            return Inventory[Resources.Ore] >= 1 && Inventory[Resources.Wheat] >= 1 && Inventory[Resources.Sheep] >= 1;
         }
         public void PayForCard()
         {
-            inventory[Resources.Ore] -= 1;
-            inventory[Resources.Sheep] -= 1;
-            inventory[Resources.Wheat] -= 1;
+            Inventory[Resources.Ore] -= 1;
+            Inventory[Resources.Sheep] -= 1;
+            Inventory[Resources.Wheat] -= 1;
         }
         public bool HasEnoughForCityUpgrade()
         {
-            return inventory[Resources.Ore] >= 3 && inventory[Resources.Wheat] >= 2;
+            return Inventory[Resources.Ore] >= 3 && Inventory[Resources.Wheat] >= 2;
         }
         public void PayForCityUpgrade()
         {
-            inventory[Resources.Ore] -= 3;
-            inventory[Resources.Wheat] -= 2;
+            Inventory[Resources.Ore] -= 3;
+            Inventory[Resources.Wheat] -= 2;
         }
         public bool HasEnoughForVillage()
         {
-            return inventory[Resources.Brick] >= 1 && inventory[Resources.Wheat] >= 1 && inventory[Resources.Wood] >= 1 && inventory[Resources.Sheep] >= 1;
+            return Inventory[Resources.Brick] >= 1 && Inventory[Resources.Wheat] >= 1 && Inventory[Resources.Wood] >= 1 && Inventory[Resources.Sheep] >= 1;
         }
         public void PayForVillage()
         {
-            inventory[Resources.Brick] -= 1;
-            inventory[Resources.Wheat] -= 1;
-            inventory[Resources.Sheep] -= 1;
-            inventory[Resources.Wood] -= 1;
+            Inventory[Resources.Brick] -= 1;
+            Inventory[Resources.Wheat] -= 1;
+            Inventory[Resources.Sheep] -= 1;
+            Inventory[Resources.Wood] -= 1;
         }
         public bool HasEnoughForRoad()
         {
-            return inventory[Resources.Brick] >= 1 && inventory[Resources.Wood] >= 1;
+            return Inventory[Resources.Brick] >= 1 && Inventory[Resources.Wood] >= 1;
         }
         public void PayForRoad()
         {
-            inventory[Resources.Brick] -= 1;
-            inventory[Resources.Wood] -= 1;
+            Inventory[Resources.Brick] -= 1;
+            Inventory[Resources.Wood] -= 1;
         }
 		public bool HasEnoughForShip()
 		{
-			return inventory[Resources.Sheep] >= 1 && inventory[Resources.Wood] >= 1;
+			return Inventory[Resources.Sheep] >= 1 && Inventory[Resources.Wood] >= 1;
 		}
 		public void PayForShip()
 		{
-			inventory[Resources.Sheep] -= 1;
-			inventory[Resources.Wood] -= 1;
+			Inventory[Resources.Sheep] -= 1;
+			Inventory[Resources.Wood] -= 1;
 		}
 		public Resources GetRandomResource()
         {
             List<Resources> list = new List<Resources>();
-            foreach (var item in inventory)
+            foreach (var item in Inventory)
             {
                 for (int i = 0; i < item.Value; i++)
                 {
@@ -81,28 +81,28 @@ namespace Catan.Shared.Model.GameState.Inventory
         }
         public bool HasSufficientResources(AbstractInventory _inventory)
         {
-            if (_inventory.GetResourceCount(Resources.Wood) > inventory[Resources.Wood]) return false;
-            if (_inventory.GetResourceCount(Resources.Brick) > inventory[Resources.Brick]) return false;
-            if (_inventory.GetResourceCount(Resources.Ore) > inventory[Resources.Ore]) return false;
-            if (_inventory.GetResourceCount(Resources.Sheep) > inventory[Resources.Wheat]) return false;
-            if (_inventory.GetResourceCount(Resources.Wheat) > inventory[Resources.Wheat]) return false;
+            if (_inventory.GetResourceCount(Resources.Wood) > Inventory[Resources.Wood]) return false;
+            if (_inventory.GetResourceCount(Resources.Brick) > Inventory[Resources.Brick]) return false;
+            if (_inventory.GetResourceCount(Resources.Ore) > Inventory[Resources.Ore]) return false;
+            if (_inventory.GetResourceCount(Resources.Sheep) > Inventory[Resources.Wheat]) return false;
+            if (_inventory.GetResourceCount(Resources.Wheat) > Inventory[Resources.Wheat]) return false;
             return true;
         }
         public void AddResources(AbstractInventory _inventory)
         {
-            inventory[Resources.Wood] += _inventory.GetResourceCount(Resources.Wood);
-            inventory[Resources.Brick] += _inventory.GetResourceCount(Resources.Brick);
-            inventory[Resources.Ore] += _inventory.GetResourceCount(Resources.Ore);
-            inventory[Resources.Sheep] += _inventory.GetResourceCount(Resources.Sheep);
-            inventory[Resources.Wheat] += _inventory.GetResourceCount(Resources.Wheat);
+            Inventory[Resources.Wood] += _inventory.GetResourceCount(Resources.Wood);
+            Inventory[Resources.Brick] += _inventory.GetResourceCount(Resources.Brick);
+            Inventory[Resources.Ore] += _inventory.GetResourceCount(Resources.Ore);
+            Inventory[Resources.Sheep] += _inventory.GetResourceCount(Resources.Sheep);
+            Inventory[Resources.Wheat] += _inventory.GetResourceCount(Resources.Wheat);
         }
         public void RemoveResources(AbstractInventory _inventory)
         {
-            inventory[Resources.Wood] -= _inventory.GetResourceCount(Resources.Wood);
-            inventory[Resources.Brick] -= _inventory.GetResourceCount(Resources.Brick);
-            inventory[Resources.Ore] -= _inventory.GetResourceCount(Resources.Ore);
-            inventory[Resources.Sheep] -= _inventory.GetResourceCount(Resources.Sheep);
-            inventory[Resources.Wheat] -= _inventory.GetResourceCount(Resources.Wheat);
+            Inventory[Resources.Wood] -= _inventory.GetResourceCount(Resources.Wood);
+            Inventory[Resources.Brick] -= _inventory.GetResourceCount(Resources.Brick);
+            Inventory[Resources.Ore] -= _inventory.GetResourceCount(Resources.Ore);
+            Inventory[Resources.Sheep] -= _inventory.GetResourceCount(Resources.Sheep);
+            Inventory[Resources.Wheat] -= _inventory.GetResourceCount(Resources.Wheat);
         }
     }
 }

@@ -17,18 +17,23 @@ namespace BLL.GameActions.AcceptTradeOfferAction.Implementations
             {
                 return GameServiceResponses.InvalidMember;
             }
-            var player = game.PlayerList.FirstOrDefault(p => p.Name == name);
-            if (player is null)
+            var targetPlayer = game.PlayerList.FirstOrDefault(p => p.Name == name);
+            if (targetPlayer is null)
             {
                 return GameServiceResponses.InvalidMember;
             }
-            if (player.Inventory.HasSufficientResources(offer.TargetOffer))
+            var ownerPlayer = game.PlayerList.FirstOrDefault(p => p.Name == offer.Owner.Name);
+			if (ownerPlayer is null)
+			{
+				return GameServiceResponses.InvalidMember;
+			}
+			if (targetPlayer.Inventory.HasSufficientResources(offer.TargetOffer))
             {
-                offer.Owner.Inventory.RemoveResources(offer.OwnerOffer);
-                offer.Owner.Inventory.AddResources(offer.TargetOffer);
-                player.Inventory.RemoveResources(offer.TargetOffer);
-                player.Inventory.AddResources(offer.OwnerOffer);
-                game.TradeOfferList.Remove(offer);
+				ownerPlayer.Inventory.RemoveResources(offer.OwnerOffer);
+				ownerPlayer.Inventory.AddResources(offer.TargetOffer);
+                targetPlayer.Inventory.RemoveResources(offer.TargetOffer);
+                targetPlayer.Inventory.AddResources(offer.OwnerOffer);
+                game.TradeOfferList.Remove(game.TradeOfferList.First(to => to.Id == offer.Id));
                 return GameServiceResponses.Success;
             }
             return GameServiceResponses.NotEnoughResourcesToAcceptTrade;

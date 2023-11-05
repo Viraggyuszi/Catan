@@ -151,7 +151,7 @@ namespace Catan.Server.Hubs
 			//TODO a felező algoritmus visszatér az eldobott nyersanyagokkal, szerver oldalon ellenőrizni, hogy tényleg jó mennyiséget dobott-e el
 			//ha igen, ha minden pacek, akkor pedig mindenkinek frissíti a játékot.
 		}
-		public async Task ThrowResourcesOnSevenRoll(Actor actor, string guidstring, AbstractInventory inventory)
+		public async Task ThrowResources(Actor actor, string guidstring, AbstractInventory inventory)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -164,6 +164,12 @@ namespace Catan.Server.Hubs
 				await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
 				return;
 			}
+			var haveToThrowResources= _gameService.HaveToThrowResources(guid) ?? throw new Exception("A boolean is null");
+			if (haveToThrowResources == false)
+			{
+				await Clients.All.SendAsync("SevenRollResolved");
+			}
+			await Clients.Caller.SendAsync("ResourcesThrown");
 			await NotifyClients(Guid.Parse(guidstring));
 		}
 		public Map GetMap(string guidstring)
@@ -250,6 +256,41 @@ namespace Catan.Server.Hubs
 			if (playerName == actor.Name)
 			{
 				var response = _gameService.BuildInitialRoad(guid, id, actor.Name);
+				if (response != GameServiceResponses.Success)
+				{
+					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());
+					return;
+				}
+				await NotifyMapChanged(guid);
+				await Clients.Caller.SendAsync("InitialTurnDone");
+				response = _gameService.EndPlayerTurn(guid, actor.Name);
+				if (response != GameServiceResponses.Success)
+				{
+					throw new Exception("Something went wrong with turn ending");
+				}
+				await CallNextPlayer(guid);
+				await NotifyClients(guid);
+			}
+		}
+		public async Task BuildInitialShip(Actor actor, string guidstring, int id)
+		{
+			if (!ActorIdentity.CheckActorIdentity(actor))
+			{
+				throw new Exception("Using other player's name");
+			}
+			Guid guid = Guid.Parse(guidstring);
+			if (_gameService.IsInitialRound(guid) == GameServiceResponses.NotInitialRound)
+			{
+				throw new Exception("It's not starting round");
+			}
+			var playerName = _gameService.GetActivePlayerName(guid);
+			if (playerName is null)
+			{
+				throw new Exception("active player is null");
+			}
+			if (playerName == actor.Name)
+			{
+				var response = _gameService.BuildInitialShip(guid, id, actor.Name);
 				if (response != GameServiceResponses.Success)
 				{
 					await Clients.Caller.SendAsync("ProcessErrorMessage", response.ToString());

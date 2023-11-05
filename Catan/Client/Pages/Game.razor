@@ -45,7 +45,7 @@
 							</div>
 						</div>
 					}
-				} @*PLAYERS CARDS*@
+				} @*PLAYERS INFOS*@
 				<div class="mt-auto"> @*INVENTORY*@
 					<div class="d-flex flex-row justify-content-evenly" style="background-color:rgb(250,227,144);opacity:0.8;">
 						@foreach (var inventoryElement in inventory)
@@ -191,8 +191,18 @@
 					{
 						if (edgeLine.Edge.Owner.Name is not null)
 						{
-							<polygon points=@edgeLine.VerticesToString() fill="@edgeLine.Edge.Owner.Color" fill-opacity="1" stroke="black" stroke-width="1" stroke-opacity="0.9"
-							 @onclick="()=>ClickOnEdgeLine(edgeLine.Edge.Id)" />
+							if (edgeLine.Edge.EdgeType==EdgeType.Road)
+							{
+								<polygon points=@edgeLine.VerticesToString() fill="@edgeLine.Edge.Owner.Color" fill-opacity="1" stroke="black" stroke-width="1" stroke-opacity="0.9"
+								@onclick="()=>ClickOnEdgeLine(edgeLine.Edge.Id)" />
+							}
+							if (edgeLine.Edge.EdgeType==EdgeType.Ship)
+							{
+								@*TODO HAJÓ KIRAJZOLÁS*@
+								<polygon points=@edgeLine.VerticesToString() fill="@edgeLine.Edge.Owner.Color" fill-opacity="0.5" stroke="yellow" stroke-width="2" stroke-opacity="0.9"
+								@onclick="()=>ClickOnEdgeLine(edgeLine.Edge.Id)" />
+							}
+							
 						}
 						else
 						{
@@ -221,6 +231,16 @@
 							<tr>
 								<td colspan="2" style="text-align:center;">Building Costs</td>
 							</tr>
+							@if (map is not null && map.FieldList.Count>37)
+							{
+								<tr @onclick="async () => await BuildingShipClicked()">
+									<td> Ship:</td>
+									<td>
+										<img src="/images/resources/sheep.png" width="40" height="40" />
+										<img src="/images/resources/wood.png" width="40" height="40" />
+									</td>
+								</tr>
+							}
 							<tr @onclick="async () => await BuildingRoadClicked()">
 								<td> Road:</td>
 								<td>
@@ -289,19 +309,141 @@
 	</div>
 </div>
 
-<div>
-	@foreach (var tradeoffer in tradeOffers)
+<div> @*TRADEOFFERS*@
+	<table> 
+		@foreach (var tradeoffer in tradeOffers)
+		{
+			<tr>
+				<td>
+					<table>
+						<tr>
+							<td colspan="5"> @(tradeoffer.Owner.Name)'s offer </td>
+						</tr>
+						<tr>
+							<td><img src="/images/resources/brick.png" width="35" height="35" /></td>
+							<td><img src="/images/resources/ore.png" width="35" height="35" /></td>
+							<td><img src="/images/resources/sheep.png" width="35" height="35" /></td>
+							<td><img src="/images/resources/wheat.png" width="35" height="35" /></td>
+							<td><img src="/images/resources/wood.png" width="35" height="35" /></td>
+						</tr>
+						<tr>
+							<td>@tradeoffer.OwnerOffer.Inventory[Resources.Brick]</td>
+							<td>@tradeoffer.OwnerOffer.Inventory[Resources.Ore]</td>
+							<td>@tradeoffer.OwnerOffer.Inventory[Resources.Sheep]</td>
+							<td>@tradeoffer.OwnerOffer.Inventory[Resources.Wheat]</td>
+							<td>@tradeoffer.OwnerOffer.Inventory[Resources.Wood]</td>
+						</tr>
+					</table>
+				</td>
+				<td>
+					<table>
+						<tr>
+							<td colspan="5"> Your offer </td>
+						</tr>
+						<tr>
+							<td><img src="/images/resources/brick.png" width="35" height="35" /></td>
+							<td><img src="/images/resources/ore.png" width="35" height="35" /></td>
+							<td><img src="/images/resources/sheep.png" width="35" height="35" /></td>
+							<td><img src="/images/resources/wheat.png" width="35" height="35" /></td>
+							<td><img src="/images/resources/wood.png" width="35" height="35" /></td>
+						</tr>
+						<tr>
+							<td>@tradeoffer.TargetOffer.Inventory[Resources.Brick]</td>
+							<td>@tradeoffer.TargetOffer.Inventory[Resources.Ore]</td>
+							<td>@tradeoffer.TargetOffer.Inventory[Resources.Sheep]</td>
+							<td>@tradeoffer.TargetOffer.Inventory[Resources.Wheat]</td>
+							<td>@tradeoffer.TargetOffer.Inventory[Resources.Wood]</td>
+						</tr>
+					</table>
+				</td>
+				<td>
+					<button @onclick="()=>AcceptTradeOffer(tradeoffer)">Accept</button>
+				</td>
+			</tr>
+		}
+	</table>
+	<button @onclick="()=>this.creatingTradeOffer=true">Create</button>
+	@if (creatingTradeOffer)
 	{
-		<p>@tradeoffer.Owner.Name</p> <button @onclick="()=>AcceptTradeOffer(tradeoffer)"></button>
+		<table>
+			<tr>
+				<td colspan="5">Your offer</td>
+			</tr>
+			<tr>
+				<td><label for="ownBrick"><img src="/images/resources/brick.png" width="35" height="35" /></label></td>
+				<td><label for="ownOre"><img src="/images/resources/ore.png" width="35" height="35" /></label></td>
+				<td><label for="ownSheep"><img src="/images/resources/sheep.png" width="35" height="35" /></label></td>
+				<td><label for="ownWheat"><img src="/images/resources/wheat.png" width="35" height="35" /></label></td>
+				<td><label for="ownWood"><img src="/images/resources/wood.png" width="35" height="35" /></label></td>
+			</tr>
+			<tr>
+				<td><input type="number" id="ownBrick" name="ownBrick" min="0" @bind-value=ownerTradeOfferInventory.Inventory[Resources.Brick]><br></td>
+				<td><input type="number" id="ownOre" name="ownOre" min="0" @bind-value=ownerTradeOfferInventory.Inventory[Resources.Ore]><br></td>
+				<td><input type="number" id="ownSheep" name="ownSheep" min="0" @bind-value=ownerTradeOfferInventory.Inventory[Resources.Sheep]><br></td>
+				<td><input type="number" id="ownWheat" name="ownWheat" min="0" @bind-value=ownerTradeOfferInventory.Inventory[Resources.Wheat]><br></td>
+				<td><input type="number" id="ownWood" name="ownWood" min="0" @bind-value=ownerTradeOfferInventory.Inventory[Resources.Wood]><br></td>
+			</tr>
+			<tr>
+				<td colspan="5">Target offer</td>
+			</tr>
+			<tr>
+				<td><label for="targetBrick"><img src="/images/resources/brick.png" width="35" height="35" /></label></td>
+				<td><label for="targetOre"><img src="/images/resources/ore.png" width="35" height="35" /></label></td>
+				<td><label for="targetSheep"><img src="/images/resources/sheep.png" width="35" height="35" /></label></td>
+				<td><label for="targetWheat"><img src="/images/resources/wheat.png" width="35" height="35" /></label></td>
+				<td><label for="targetWood"><img src="/images/resources/wood.png" width="35" height="35" /></label></td>
+			</tr>
+			<tr>
+				<td><input type="number" id="targetBrick" name="targetBrick" min="0" @bind-value=targetTradeOfferInventory.Inventory[Resources.Brick]><br></td>
+				<td><input type="number" id="targetOre" name="targetOre" min="0" @bind-value=targetTradeOfferInventory.Inventory[Resources.Ore]><br></td>
+				<td><input type="number" id="targetSheep" name="targetSheep" min="0" @bind-value=targetTradeOfferInventory.Inventory[Resources.Sheep]><br></td>
+				<td><input type="number" id="targetWheat" name="targetWheat" min="0" @bind-value=targetTradeOfferInventory.Inventory[Resources.Wheat]><br></td>
+				<td><input type="number" id="targetWood" name="targetWood" min="0" @bind-value=targetTradeOfferInventory.Inventory[Resources.Wood]><br></td>
+			</tr>
+
+			<button @onclick="SendTradeOffer">Send</button>
+			<button @onclick="()=>this.creatingTradeOffer=false">Cancel</button>
+		</table>
 	}
-	<button @onclick="SendTradeOffer"> Küldés</button>
 </div>
+
+<div> @*THROWRESOURCES*@
+	@if (haveToThrowResources)
+	{
+		<table>
+			<tr>
+				<td colspan="5">Target offer</td>
+			</tr>
+			<tr>
+				<td><label for="throwBrick"><img src="/images/resources/brick.png" width="35" height="35" /></label></td>
+				<td><label for="throwOre"><img src="/images/resources/ore.png" width="35" height="35" /></label></td>
+				<td><label for="throwSheep"><img src="/images/resources/sheep.png" width="35" height="35" /></label></td>
+				<td><label for="throwWheat"><img src="/images/resources/wheat.png" width="35" height="35" /></label></td>
+				<td><label for="throwWood"><img src="/images/resources/wood.png" width="35" height="35" /></label></td>
+			</tr>
+			<tr>
+				<td><input type="number" id="throwBrick" name="throwBrick" min="0" @bind-value=throwResourcesInventory.Inventory[Resources.Brick]><br></td>
+				<td><input type="number" id="throwOre" name="throwOre" min="0" @bind-value=throwResourcesInventory.Inventory[Resources.Ore]><br></td>
+				<td><input type="number" id="throwSheep" name="throwSheep" min="0" @bind-value=throwResourcesInventory.Inventory[Resources.Sheep]><br></td>
+				<td><input type="number" id="throwWheat" name="throwWheat" min="0" @bind-value=throwResourcesInventory.Inventory[Resources.Wheat]><br></td>
+				<td><input type="number" id="throwWood" name="throwWood" min="0" @bind-value=throwResourcesInventory.Inventory[Resources.Wood]><br></td>
+			</tr>
+
+			<button @onclick="ThrowResources">Throw Resources</button>
+		</table>
+	}
+</div>
+
 <p>Hiba: @errorMessage</p>
 @code {
+	private AbstractInventory throwResourcesInventory = new AbstractInventory();
 
+	private AbstractInventory ownerTradeOfferInventory = new AbstractInventory();
+	private AbstractInventory targetTradeOfferInventory = new AbstractInventory();
 	private bool makingSettlement = false; //TODO
 	private bool makingRoad = false;
 	private bool makingCity = false;
+	private bool makingShip = false;
 
 	private bool ownTurn = false;
 	private bool diceRolled = false;
@@ -344,7 +486,14 @@
 		diceRolled = false;
 		StateHasChanged();
 	}
-
+	private async Task BuildingShipClicked()
+	{
+		makingShip = true;
+		StateHasChanged();
+		await Task.Delay(5000);
+		makingShip = false;
+		StateHasChanged();
+	}
 	private async Task BuildingRoadClicked()
 	{
 		makingRoad=true;
@@ -369,7 +518,6 @@
 		makingCity = false;
 		StateHasChanged();
 	}
-
 	protected override async Task OnInitializedAsync()
 	{
 		string name = await JS.InvokeAsync<string>("localStorage.getItem", "userName");
@@ -407,16 +555,13 @@
 		await ChatComponent!.ChangeSignalRGroup(Guid);
 
 	}
-
 	private List<Player> PlayerList = new List<Player>();
 	private Dictionary<string, int> nameResourceCount = new Dictionary<string, int>();
-
 	private async Task UpdatePlayerList()
 	{
 		var response = await hubConnection!.InvokeAsync<List<Player>>("GetPlayerList", actor, Guid);
 		PlayerList = response;
 	}
-
 	private async Task updateMapStatus(Map newMap)
 	{
 		map = newMap;
@@ -522,13 +667,27 @@
 		}
 	}
 
-
+	private bool haveToThrowResources = false;
 	private string errorMessage = "";
 	private bool resolveSevenOrMoreResources = false;
 	private bool resolveRobberMovement = false;
-
+	private bool creatingTradeOffer = false;
 	private bool initialVillageTurn = false;
 	private bool initialRoadTurn = false;
+
+	private async Task ThrowResources()
+	{
+		if (HasSufficientResources(throwResourcesInventory))
+		{
+			await hubConnection!.SendAsync("ThrowResources", actor, Guid, throwResourcesInventory);
+		}
+		else
+		{
+			errorMessage = "Not enough resources";
+		}
+	}
+
+
 	private void SetupHubConnectionEndpoints()
 	{
 		hubConnection!.On<Map>("ProcessMap", async (map) =>
@@ -538,6 +697,13 @@
 		hubConnection!.On("ResolveSevenRoll", () =>
 		{
 			resolveSevenOrMoreResources = true; //TODO meg kell jeleníteni egy gui-s részt, ahol be lehet kattingatni, hogy miket akarsz eldobálni
+			haveToThrowResources = true;
+			StateHasChanged();
+		});
+		hubConnection!.On("ResourcesThrown", () =>
+		{
+			haveToThrowResources = false;
+			throwResourcesInventory = new AbstractInventory();
 			StateHasChanged();
 		});
 		hubConnection!.On("SevenRollResolved", () =>
@@ -637,18 +803,35 @@
 
 	}
 	private List<TradeOffer> tradeOffers = new List<TradeOffer>();
+
+	private bool HasSufficientResources(AbstractInventory _inventory)
+	{
+		if (_inventory.GetResourceCount(Resources.Wood) > inventory[Resources.Wood]) return false;
+		if (_inventory.GetResourceCount(Resources.Brick) > inventory[Resources.Brick]) return false;
+		if (_inventory.GetResourceCount(Resources.Ore) > inventory[Resources.Ore]) return false;
+		if (_inventory.GetResourceCount(Resources.Sheep) > inventory[Resources.Wheat]) return false;
+		if (_inventory.GetResourceCount(Resources.Wheat) > inventory[Resources.Wheat]) return false;
+		return true;
+	}
+
 	private async Task AcceptTradeOffer(TradeOffer tradeOffer)
 	{
 		await hubConnection!.SendAsync("AcceptTradeOffer", actor, Guid, tradeOffer);
 	}
 	private async Task SendTradeOffer()
 	{
-		var offer = new AbstractInventory();
-		offer.AddResource(Resources.Wood, 3);
-		var goal = new AbstractInventory();
-		goal.AddResource(Resources.Ore, 3);
-		var tradeOffer = new TradeOffer(PlayerList.First(p => p.Name == actor.Name), offer, goal);
-		await hubConnection!.SendAsync("SendTradeOffer", actor, Guid, tradeOffer);
+		if (HasSufficientResources(ownerTradeOfferInventory))
+		{
+			var tradeOffer = new TradeOffer(PlayerList.First(p => p.Name == actor.Name), ownerTradeOfferInventory, targetTradeOfferInventory);
+			await hubConnection!.SendAsync("SendTradeOffer", actor, Guid, tradeOffer);
+			creatingTradeOffer = false;
+			ownerTradeOfferInventory = new AbstractInventory();
+			targetTradeOfferInventory = new AbstractInventory();
+		}
+		else
+		{
+			errorMessage = "Not enough resources";
+		}
 	}
 	private int[] dices = new int[2];
 	private async Task SetConnectionString(string conID)
@@ -667,11 +850,21 @@
 	{
 		if (initialVillageTurn)
 		{
-			await hubConnection!.SendAsync("BuildInitialVillage", actor, Guid, id);
+			if (makingSettlement)
+			{
+				await hubConnection!.SendAsync("BuildInitialVillage", actor, Guid, id);
+			}
 		}
 		else if (ownTurn)
 		{
-			await hubConnection!.SendAsync("ClaimCorner", actor, Guid, id);
+			if (makingSettlement)
+			{
+				await hubConnection!.SendAsync("BuildVillage", actor, Guid, id);
+			}
+			if (makingCity)
+			{
+				await hubConnection!.SendAsync("BuildCity",actor,Guid,id);
+			}
 		}
 		StateHasChanged();
 	}
@@ -679,15 +872,28 @@
 	{
 		if (initialRoadTurn)
 		{
-			await hubConnection!.SendAsync("BuildInitialRoad", actor, Guid, id);
+			if (makingRoad)
+			{
+				await hubConnection!.SendAsync("BuildInitialRoad", actor, Guid, id);
+			}
+			if (makingShip)
+			{
+				await hubConnection!.SendAsync("BuildInitialShip", actor, Guid, id);
+			}
 		}
 		else if (ownTurn)
 		{
-			await hubConnection!.SendAsync("ClaimEdge", actor, Guid, id);
+			if (makingRoad)
+			{
+				await hubConnection!.SendAsync("BuildRoad", actor, Guid, id);		
+			}
+			if (makingShip)
+			{
+				await hubConnection!.SendAsync("BuildShip", actor, Guid, id);
+			}
 		}
 		StateHasChanged();
 	}
-
 	private async Task ClickOnHexagon(int id)
 	{
 		if (ownTurn && resolveRobberMovement)

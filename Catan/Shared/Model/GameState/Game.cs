@@ -21,6 +21,7 @@ namespace Catan.Shared.Model.GameState
         public bool InitialRound { get; set; } = false;
         public int InitialRoundCount { get; set; } = 0;
         public bool AlreadyInitialized { get; set; } = false;
+        public bool HaveToRollDices { get; set; } = false;
         public bool ActivePlayerCanPlaceInitialVillage { get; set; } = false;
         public bool ActivePlayerCanPlaceInitialRoad { get; set; } = false;
         public int LastInitialVillageId { get; set; } = 0;

@@ -29,6 +29,7 @@ namespace BLL.Services.Interfaces
         public GameServiceResponses EndPlayerTurn(Guid guid, string name);
         public GameServiceResponses BuildInitialVillage(Guid guid, int id, string name);
         public GameServiceResponses BuildInitialRoad(Guid guid, int id, string name);
+        public GameServiceResponses BuildInitialShip(Guid guid, int id, string name);
         public GameServiceResponses BuildVillage(Guid guid, int id, string name);
         public GameServiceResponses BuildCity(Guid guid, int id, string name);
 		public GameServiceResponses BuildRoad(Guid guid, int id, string name);
@@ -46,5 +47,6 @@ namespace BLL.Services.Interfaces
         public GameServiceResponses ThrowResources(Guid guid, AbstractInventory thrownResources, string name);
         public GameServiceResponses BuildShip(Guid guid, int id, string name);
 
+        public bool? HaveToThrowResources(Guid guid);
 	}
 }

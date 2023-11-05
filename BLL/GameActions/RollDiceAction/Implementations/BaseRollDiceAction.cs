@@ -18,6 +18,10 @@ namespace BLL.GameActions.RollDiceAction.Implementations
             {
                 return GameServiceResponses.InvalidMember;
             }
+            if (!game.HaveToRollDices)
+            {
+                return GameServiceResponses.DicesAlreadyRolled;
+			}
             int sum = 0;
             foreach (var dice in game.Dices)
             {
@@ -36,7 +40,6 @@ namespace BLL.GameActions.RollDiceAction.Implementations
                         game.PlayersWithSevenOrMoreResources.Add(player);
                     }
                 }
-                return GameServiceResponses.SuccessWithSevenRoll;
             }
             else
             {
@@ -54,7 +57,8 @@ namespace BLL.GameActions.RollDiceAction.Implementations
                     }
                 }
             }
-            return GameServiceResponses.Success;
+            game.HaveToRollDices = false;
+			return GameServiceResponses.Success;
         }
     }
 }
