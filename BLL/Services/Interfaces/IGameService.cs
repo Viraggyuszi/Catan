@@ -1,6 +1,7 @@
 ﻿using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
+using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
 using System;
@@ -26,10 +27,12 @@ namespace BLL.Services.Interfaces
 		public GameServiceResponses StartGame(Guid guid);
         public GameServiceResponses IsInitialRound(Guid guid);
         public GameServiceResponses EndPlayerTurn(Guid guid, string name);
-        public GameServiceResponses ClaimInitialCorner(Guid guid, int id, string name);
-        public GameServiceResponses ClaimInitialRoad(Guid guid, int id, string name);
-        public GameServiceResponses ClaimCorner(Guid guid, int id, string name);
-        public GameServiceResponses ClaimEdge(Guid guid, int id, string name);
+        public GameServiceResponses BuildInitialVillage(Guid guid, int id, string name);
+        public GameServiceResponses BuildInitialRoad(Guid guid, int id, string name);
+        public GameServiceResponses BuildInitialShip(Guid guid, int id, string name);
+        public GameServiceResponses BuildVillage(Guid guid, int id, string name);
+        public GameServiceResponses BuildCity(Guid guid, int id, string name);
+		public GameServiceResponses BuildRoad(Guid guid, int id, string name);
         public Dictionary<Resources, int>? GetPlayersInventory(Guid guid, string name);
         public Dictionary<string, int>? GetOtherPlayersInventory(Guid guid, string name);
         public GameServiceResponses IsGameOver(Guid guid);
@@ -41,8 +44,13 @@ namespace BLL.Services.Interfaces
         public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer);
         public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name);
 
-        public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name);
+        public GameServiceResponses ThrowResources(Guid guid, AbstractInventory thrownResources, string name);
+        public GameServiceResponses BuildShip(Guid guid, int id, string name);
 
-        
+        public bool? HaveToThrowResources(Guid guid);
+
+        public GameServiceResponses BuyCard(Guid guid, string name);
+        public GameServiceResponses PlayCard(Guid guid, CardType card, string name);
+        public FetchCardInventoryDTO? GetCards(Guid guid, string name);
 	}
 }

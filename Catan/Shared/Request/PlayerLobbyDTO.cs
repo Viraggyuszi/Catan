@@ -12,5 +12,6 @@ namespace Catan.Shared.Request
 	{
 		public Actor? Actor { get; set; }
 		public Lobby? Lobby { get; set; }
+		public Dictionary<GameType, bool>? DLCs { get; set; }
 	}
 }

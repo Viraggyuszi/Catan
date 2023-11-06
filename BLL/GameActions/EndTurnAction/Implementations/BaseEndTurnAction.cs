@@ -13,7 +13,23 @@ namespace BLL.GameActions.EndTurnAction.Implementations
     {
         public GameServiceResponses Execute(Game game, string name)
         {
-            game.ActivePlayer = game.PlayerList[(game.PlayerList.IndexOf(game.ActivePlayer) + 1) % game.PlayerList.Count];
+            if (game.FreeRoadBuilding > 0)
+            {
+                return GameServiceResponses.ResolveFreeRoadBuildingFirst;
+            }
+            if (game.ResolveResourceCount)
+            {
+                return GameServiceResponses.ResolveSevenRollsFirst;
+            }
+            if (game.RobberNeedsMove)
+            {
+                return GameServiceResponses.MoveRobberFirst;
+            }
+			if (game.HaveToRollDices)
+			{
+				return GameServiceResponses.RollDicesFirst;
+			}
+			game.ActivePlayer = game.PlayerList[(game.PlayerList.IndexOf(game.ActivePlayer) + 1) % game.PlayerList.Count];
             game.TradeOfferList.Clear();
             if (game.InitialRound)
             {
@@ -21,7 +37,8 @@ namespace BLL.GameActions.EndTurnAction.Implementations
                 if (game.InitialRoundCount <= 0)
                 {
                     game.InitialRound = false;
-                    foreach (var corner in game.GameMap.CornerList)
+					game.HaveToRollDices = true;
+					foreach (var corner in game.GameMap.CornerList)
                     {
                         if (corner.Level > 0)
                         {
@@ -38,6 +55,11 @@ namespace BLL.GameActions.EndTurnAction.Implementations
                     game.ActivePlayerCanPlaceInitialRoad = true;
                 }
             }
+            else
+            {
+				game.HaveToRollDices = true;
+			}
+			game.FreeRoadBuilding = 0;
             return GameServiceResponses.Success;
         }
     }

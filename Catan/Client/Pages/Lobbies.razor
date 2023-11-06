@@ -14,6 +14,7 @@
 		<div class="col-md-4">
 			<div class="input-group">
 				<input type="text" class="form-control" placeholder="Name of new lobby" @bind-value=NewLobbyName>
+				<input type="checkbox" @bind-value=Seafarer>
 				<div class="input-group-append">
 					<button class="btn btn-primary" @onclick=CreateNewLobby>Save</button>
 					<button class="btn btn-secondary" @onclick=CancelNewLobbyCreating>Cancel</button>
@@ -82,6 +83,8 @@ else
 
 	private string NewLobbyName = "";
 	private bool lobbyCreating = false;
+	private bool Seafarer = false;
+	private Dictionary<GameType, bool> DLCs = new Dictionary<GameType, bool>();
 
 
 	private Actor? actor;
@@ -157,6 +160,8 @@ else
 	private void ToggleCreatingLobby()
 	{
 		lobbyCreating = true;
+		DLCs.Clear();
+		Seafarer = false;
 		StateHasChanged();
 	}
 
@@ -167,7 +172,11 @@ else
 
 	private async Task CreateNewLobby()
 	{
-		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = actor, Lobby = new Lobby { Name = NewLobbyName } };
+		if (Seafarer)
+		{
+			DLCs.Add(GameType.Seafarer, true);
+		}
+		PlayerLobbyDTO playerLobbyDTO = new PlayerLobbyDTO() { Actor = actor, Lobby = new Lobby { Name = NewLobbyName }, DLCs=this.DLCs };
 		var response = await Http.PostAsJsonAsync("api/lobby/create", playerLobbyDTO);
 		var lobby = await response.Content.ReadFromJsonAsync<ApiDTO<InMemoryDatabaseLobbyResponses>>();
 		if (lobby is not null && lobby.Success)

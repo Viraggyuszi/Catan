@@ -94,6 +94,7 @@ namespace BLL.Services.Implementations
                 player.Points = 0;
                 player.Color = colors[i++].Name;
             }
+            game.DLCs = lobby.DLCs;
             return game;
         }
     }

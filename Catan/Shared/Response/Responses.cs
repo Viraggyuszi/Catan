@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace Catan.Shared.Response
 {
+    public enum InMemoryDatabaseHandlerResponses
+    {
+        Success,
+        RegisterHandlerFailed,
+        RemoveHandlerFailed
+    }
     public enum InMemoryDatabaseLobbyResponses
     {
         Success,
@@ -25,6 +31,16 @@ namespace Catan.Shared.Response
     }
     public enum GameServiceResponses
     {
+        RollDicesFirst,
+        DicesAlreadyRolled,
+        HandlerDoesntExist,
+        DontHaveCard,
+		OutOfCards,
+		NotEnoughResourcesForCard,
+		CantBuyCardsAtTheMoment,
+        CantPlayCardsAtTheMoment,
+        ShipCantBePlacedHere,
+        ForbiddenAction,
         Success,
         InvalidGame,
         InvalidMember,
@@ -41,6 +57,8 @@ namespace Catan.Shared.Response
         InitialRoadNotPlacedCorrectly,
         CantPlaceCornerAtTheMoment,
         CantPlaceEdgeAtTheMoment,
+        CantPlaceVillageNextToOtherVillage,
+        CantUpgradeVillage,
         NotEnoughResourcesForRoad,
         NotEnoughResourcesForVillage,
         NotEnoughResourcesForUpgrade,
@@ -56,6 +74,9 @@ namespace Catan.Shared.Response
         BadResourceCountForTradingWithBank,
         NotEnoughResourceThrown,
         InvalidResourcesHaveBeenThrown,
-        SuccessWithSevenRoll
+        SuccessWithSevenRoll,
+		MoveRobberFirst,
+		ResolveSevenRollsFirst,
+		ResolveFreeRoadBuildingFirst
 	}
 }

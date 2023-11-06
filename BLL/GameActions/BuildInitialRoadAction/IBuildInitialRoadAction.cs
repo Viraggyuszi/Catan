@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.GameActions.ClaimInitialCornerAction
+namespace BLL.GameActions.BuildInitialRoadAction
 {
-    public interface IClaimInitialCornerAction
+    public interface IBuildInitialRoadAction
     {
-        public GameServiceResponses Execute(Game game, int cornerId, string name);
+        public GameServiceResponses Execute(Game game, int edgeId, string name);
     }
 }

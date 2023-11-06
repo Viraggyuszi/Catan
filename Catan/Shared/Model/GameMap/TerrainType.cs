@@ -8,6 +8,6 @@ namespace Catan.Shared.Model.GameMap
 {
     public enum TerrainType
     {
-        Forest, Mountains, Cropfield, Grassland, Quarry, Desert, Sea
+        Forest, Mountains, Cropfield, Grassland, Quarry, Desert, Sea, Unknown, GoldField
     }
 }

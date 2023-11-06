@@ -1,4 +1,5 @@
-﻿using BLL.Services.Interfaces;
+﻿using BLL.GameActions;
+using BLL.Services.Interfaces;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Response;
 using System;
@@ -16,18 +17,41 @@ namespace BLL.Services.Implementations
         public InMemoryDatabaseGame()
         {
             GuidGamePairs = new ConcurrentDictionary<Guid, Game>();
+            GameGameHandlerPair = new ConcurrentDictionary<Game, GameActionHandler>();
         }
-        public InMemoryDatabaseGameResponses AddGame(Guid guid, Game game)
+        public InMemoryDatabaseGameResponses AddGame(Guid guid, Game game, GameActionHandler handler)
         {
+            AddGameHandler(game, handler);
             return GuidGamePairs.TryAdd(guid, game) ? InMemoryDatabaseGameResponses.Success : InMemoryDatabaseGameResponses.CreateGameFailed;
         }
         public InMemoryDatabaseGameResponses RemoveGame(Guid guid)
         {
-            return GuidGamePairs.TryRemove(guid, out _) ? InMemoryDatabaseGameResponses.Success : InMemoryDatabaseGameResponses.RemoveGameFailed;
+            var removeResult = GuidGamePairs.TryRemove(guid, out var game);
+            if (game is not null)
+            {
+				RemoveGameHandler(game);
+			}
+			return removeResult ? InMemoryDatabaseGameResponses.Success : InMemoryDatabaseGameResponses.RemoveGameFailed;
         }
         public Game? GetGame(Guid guid)
         {
             return GuidGamePairs.GetValueOrDefault(guid);
         }
-    }
+
+		private ConcurrentDictionary<Game, GameActionHandler> GameGameHandlerPair { get; set; }
+		private InMemoryDatabaseHandlerResponses AddGameHandler(Game game, GameActionHandler handler)
+		{
+			return GameGameHandlerPair.TryAdd(game, handler) ? InMemoryDatabaseHandlerResponses.Success : InMemoryDatabaseHandlerResponses.RegisterHandlerFailed;
+		}
+		private InMemoryDatabaseHandlerResponses RemoveGameHandler(Game game)
+		{
+			return GameGameHandlerPair.TryRemove(game, out _) ? InMemoryDatabaseHandlerResponses.Success : InMemoryDatabaseHandlerResponses.RemoveHandlerFailed;
+		}
+		public GameActionHandler? GetGameActionHandler(Game game)
+		{
+			return GameGameHandlerPair.GetValueOrDefault(game);
+		}
+
+
+	}
 }

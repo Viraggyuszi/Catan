@@ -1,15 +1,21 @@
 ﻿using BLL.GameActions.AcceptTradeOfferAction;
-using BLL.GameActions.ClaimCornerAction;
-using BLL.GameActions.ClaimEdgeAction;
-using BLL.GameActions.ClaimInitialCornerAction;
-using BLL.GameActions.ClaimInitialEdgeAction;
+using BLL.GameActions.BuildCityAction;
+using BLL.GameActions.BuildInitialRoadAction;
+using BLL.GameActions.BuildInitialShipAction;
+using BLL.GameActions.BuildInitialVillageAction;
+using BLL.GameActions.BuildRoadAction;
+using BLL.GameActions.BuildShipAction;
+using BLL.GameActions.BuildVillageAction;
+using BLL.GameActions.BuyCardAction;
 using BLL.GameActions.EndTurnAction;
 using BLL.GameActions.MoveRobberAction;
+using BLL.GameActions.PlayCardAction;
 using BLL.GameActions.RegisterTradeOfferAction;
 using BLL.GameActions.RegisterTradeOfferWithBankAction;
 using BLL.GameActions.RollDiceAction;
 using BLL.GameActions.ThrowResourcesAction;
 using Catan.Shared.Model.GameState;
+using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Response;
 using System;
 using System.Collections.Generic;
@@ -21,60 +27,150 @@ namespace BLL.GameActions
 {
     public class GameActionHandler
     {
-		public required IClaimCornerAction ClaimCornerAction { private get; init; }
-		public required IClaimEdgeAction ClaimEdgeAction { private get; init; }
-		public required IEndTurnAction EndTurnAction { private get; init; }
-		public required IClaimInitialCornerAction ClaimInitialCornerAction { private get; init; }
-		public required IClaimInitialEdgeAction ClaimInitialEdgeAction { private get; init; }
-		public required IMoveRobberAction MoveRobberAction { private get; init; }
-		public required IRegisterTradeOfferWithBankAction RegisterTradeOfferWithBankAction { private get; init; }
-		public required IRegisterTradeOfferAction RegisterTradeOfferAction { private get; init; }
-		public required IAcceptTradeOfferAction AcceptTradeOfferAction { private get; init; }
-		public required IThrowResourcesAction ThrowResourcesAction { private get; init; }
-		public required IDiceRollAction RollDiceAction { private get; init; }
+		public required IBuildVillageAction? BuildVillageAction { private get; init; }
+		public required IBuildCityAction? BuildCityAction { private get; init; }
+		public required IBuildRoadAction? BuildRoadAction { private get; init; }
+		public required IEndTurnAction? EndTurnAction { private get; init; }
+		public required IBuildInitialVillageAction? BuildInitialVillageAction { private get; init; }
+		public required IBuildInitialRoadAction? BuildInitialRoadAction { private get; init; }
+        public required IBuildInitialShipAction? BuildInitialShipAction { private get; init; }
+		public required IMoveRobberAction? MoveRobberAction { private get; init; }
+		public required IRegisterTradeOfferWithBankAction? RegisterTradeOfferWithBankAction { private get; init; }
+		public required IRegisterTradeOfferAction? RegisterTradeOfferAction { private get; init; }
+		public required IAcceptTradeOfferAction? AcceptTradeOfferAction { private get; init; }
+		public required IThrowResourcesAction? ThrowResourcesAction { private get; init; }
+		public required IDiceRollAction? RollDiceAction { private get; init; }
+        public required IBuildShipAction? BuildShipAction { private get; init; }
+        public required IBuyCardAction? BuyCardAction { private get; init; }
+        public required IPlayCardAction? PlayCardAction { private get; init; }
 
-		public virtual GameServiceResponses ExecuteClaimCornerAction(Game game, int cornerId, string name)
+		public GameServiceResponses ExecuteBuyCardAction(Game game, string name)
+		{
+			if (BuyCardAction is null)
+			{
+				return GameServiceResponses.ForbiddenAction;
+			}
+			return BuyCardAction.Execute(game, name);
+		}
+		public GameServiceResponses ExecutePlayCardAction(Game game, CardType card, string name)
+		{
+			if (PlayCardAction is null)
+			{
+				return GameServiceResponses.ForbiddenAction;
+			}
+            return PlayCardAction.Execute(game, card, name);
+		}
+
+		public GameServiceResponses ExecuteBuildShipAction(Game game, int edgeId, string name)
         {
-            return ClaimCornerAction.Execute(game, cornerId, name);
+            if (BuildShipAction is null)
+            {
+                return GameServiceResponses.ForbiddenAction;
+            }
+            return BuildShipAction.Execute(game, edgeId, name);
         }
-        public virtual GameServiceResponses ExecuteClaimEdgeAction(Game game, int edgeId, string name)
+		public GameServiceResponses ExecuteBuildInitialShipAction(Game game, int cornerId, string name)
+		{
+			if (BuildInitialShipAction is null)
+			{
+				return GameServiceResponses.ForbiddenAction;
+			}
+			return BuildInitialShipAction.Execute(game, cornerId, name);
+		}
+		public GameServiceResponses ExecuteBuildVillageAction(Game game, int cornerId, string name)
+		{
+            if (BuildVillageAction is null)
+            {
+                return GameServiceResponses.ForbiddenAction;
+			}
+			return BuildVillageAction.Execute(game, cornerId, name);
+		}
+		public GameServiceResponses ExecuteBuildCityAction(Game game, int cornerId, string name)
         {
-            return ClaimEdgeAction.Execute(game, edgeId, name);
+            if (BuildCityAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
+            return BuildCityAction.Execute(game, cornerId, name) ;
         }
-        public virtual GameServiceResponses ExecuteEndTurnAction(Game game, string name)
+        public GameServiceResponses ExecuteBuildRoadAction(Game game, int edgeId, string name)
         {
+            if (BuildRoadAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
+            return BuildRoadAction.Execute(game, edgeId, name);
+        }
+        public GameServiceResponses ExecuteEndTurnAction(Game game, string name)
+        {
+            if (EndTurnAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
             return EndTurnAction.Execute(game, name);
         }
-        public virtual GameServiceResponses ExecuteClaimInitialCornerAction(Game game, int cornerId, string name)
+        public GameServiceResponses ExecuteBuildInitialVillageAction(Game game, int cornerId, string name)
         {
-            return ClaimInitialCornerAction.Execute(game, cornerId, name);
+            if (BuildInitialVillageAction is null)
+            {
+                return GameServiceResponses.ForbiddenAction;
+            }
+            return BuildInitialVillageAction.Execute(game, cornerId, name);
         }
-        public virtual GameServiceResponses ExecuteClaimInitialEdgeAction(Game game, int edgeId, string name)
+        public GameServiceResponses ExecuteBuildInitialRoadAction(Game game, int edgeId, string name)
         {
-            return ClaimInitialEdgeAction.Execute(game, edgeId, name);
+            if (BuildInitialRoadAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
+            return BuildInitialRoadAction.Execute(game, edgeId, name);
         }
-        public virtual GameServiceResponses ExecuteMoveRobberAction(Game game, int fieldId, string name)
+        public GameServiceResponses ExecuteMoveRobberAction(Game game, int fieldId, string name)
         {
+            if (MoveRobberAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
             return MoveRobberAction.Execute(game, fieldId, name);
         }
-        public virtual GameServiceResponses ExecuteRegisterTradeOfferWithBankAction(Game game, TradeOffer tradeOffer)
+        public GameServiceResponses ExecuteRegisterTradeOfferWithBankAction(Game game, TradeOffer tradeOffer)
         {
+            if (RegisterTradeOfferWithBankAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
             return RegisterTradeOfferWithBankAction.Execute(game, tradeOffer);
         }
-        public virtual GameServiceResponses ExecuteRegisterTradeOfferAction(Game game, TradeOffer tradeOffer)
+        public GameServiceResponses ExecuteRegisterTradeOfferAction(Game game, TradeOffer tradeOffer)
         {
+            if (RegisterTradeOfferAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
             return RegisterTradeOfferAction.Execute(game, tradeOffer);
         }
-        public virtual GameServiceResponses ExecuteAcceptTradeOfferAction(Game game, TradeOffer tradeOffer, string name)
+        public GameServiceResponses ExecuteAcceptTradeOfferAction(Game game, TradeOffer tradeOffer, string name)
         {
+            if (AcceptTradeOfferAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
             return AcceptTradeOfferAction.Execute(game, tradeOffer, name);
         }
-        public virtual GameServiceResponses ExecuteThrowResourcesAction(Game game, Inventory thrownResources, string name)
+        public GameServiceResponses ExecuteThrowResourcesAction(Game game, AbstractInventory thrownResources, string name)
         {
+            if (ThrowResourcesAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
             return ThrowResourcesAction.Execute(game, thrownResources, name);
         }
-        public virtual GameServiceResponses ExecuteDiceRollAction(Game game, string name)
+        public GameServiceResponses ExecuteDiceRollAction(Game game, string name)
         {
+            if (RollDiceAction is null)
+            {
+				return GameServiceResponses.ForbiddenAction;
+			}
             return RollDiceAction.Execute(game, name);
         }
     }

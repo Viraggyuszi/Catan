@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.GameActions.ClaimInitialEdgeAction
+namespace BLL.GameActions.BuyCardAction
 {
-    public interface IClaimInitialEdgeAction
-    {
-        public GameServiceResponses Execute(Game game, int edgeId, string name);
-    }
+	public interface IBuyCardAction
+	{
+		public GameServiceResponses Execute(Game game, string name);
+	}
 }

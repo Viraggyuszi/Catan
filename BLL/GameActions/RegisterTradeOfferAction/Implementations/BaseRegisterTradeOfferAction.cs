@@ -17,10 +17,16 @@ namespace BLL.GameActions.RegisterTradeOfferAction.Implementations
             {
                 return GameServiceResponses.InvalidMember;
             }
-            if (game.TradeOfferList.Count < 3)
+			if (game.HaveToRollDices)
+			{
+				return GameServiceResponses.RollDicesFirst;
+			}
+			if (game.TradeOfferList.Count < 3)
             {
                 if (game.ActivePlayer.Inventory.HasSufficientResources(offer.OwnerOffer))
                 {
+                    int lastId=game.TradeOfferList.Count;
+                    offer.Id = lastId++;
                     game.TradeOfferList.Add(offer);
                     return GameServiceResponses.Success;
                 }

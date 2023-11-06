@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Catan.Shared.Model.GameMap;
 
-namespace Catan.Shared.Model.GameState
+namespace Catan.Shared.Model.GameState.Inventory
 {
-    public class Inventory
+    public class AbstractInventory
     {
-        protected Dictionary<Resources, int> inventory;
-        public Inventory()
+        public Dictionary<Resources, int> Inventory { get; set; }
+        public AbstractInventory()
         {
-            inventory = new Dictionary<Resources, int>
+            Inventory = new Dictionary<Resources, int>
             {
                 { Resources.Brick, 0 },
                 { Resources.Ore, 0 },
@@ -27,22 +27,26 @@ namespace Catan.Shared.Model.GameState
             {
                 case TerrainType.Desert:
                     break;
-                case TerrainType.Sea:
+				case TerrainType.Unknown:
+					break;
+				case TerrainType.GoldField:
+					break;
+				case TerrainType.Sea:
                     break;
                 case TerrainType.Forest:
-                    inventory[Resources.Wood] += count;
+                    Inventory[Resources.Wood] += count;
                     break;
                 case TerrainType.Mountains:
-                    inventory[Resources.Ore] += count;
+                    Inventory[Resources.Ore] += count;
                     break;
                 case TerrainType.Cropfield:
-                    inventory[Resources.Wheat] += count;
+                    Inventory[Resources.Wheat] += count;
                     break;
                 case TerrainType.Grassland:
-                    inventory[Resources.Sheep] += count;
+                    Inventory[Resources.Sheep] += count;
                     break;
                 case TerrainType.Quarry:
-                    inventory[Resources.Brick] += count;
+                    Inventory[Resources.Brick] += count;
                     break;
                 default:
                     throw new Exception("why doesn't have a matching type?");
@@ -50,19 +54,19 @@ namespace Catan.Shared.Model.GameState
         }
         public void AddResource(Resources resource, int count)
         {
-            inventory[resource] += count;
+            Inventory[resource] += count;
         }
         public void RemoveResource(Resources resource, int count)
         {
-            inventory[resource] -= count;
+            Inventory[resource] -= count;
         }
         public int GetResourceCount(Resources resource)
         {
-            return inventory[resource];
+            return Inventory[resource];
         }
         public int GetAllResourcesCount()
         {
-            return inventory.Values.Sum();
+            return Inventory.Values.Sum();
         }
     }
 }

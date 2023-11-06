@@ -7,12 +7,21 @@ namespace BLL.Services.MapServices.Implementations
 {
 	public class MapService : IMapService
 	{
-		public Map GenerateMap(GameType gameType)
+		public Map GenerateMap(Dictionary<GameType, bool> DLCs)
 		{
+			GameType gameType;
+			if (DLCs.GetValueOrDefault(GameType.Seafarer))
+			{
+				gameType = GameType.Seafarer;
+			}
+			else
+			{
+				gameType = GameType.Base;
+			}
 			return gameType switch
 			{
 				GameType.Base => new BaseGameMapGenerator().GenerateMap(),
-				GameType.Seafarer => throw new Exception("Not implemented yet"),
+				GameType.Seafarer => new SeafarerGameMapGenerator().GenerateMap(),
 				_ => throw new NotImplementedException(),
 			};
 		}

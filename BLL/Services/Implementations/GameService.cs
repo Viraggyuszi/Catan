@@ -1,10 +1,11 @@
 ﻿using BLL.GameActions;
 using BLL.Services.Interfaces;
 using BLL.Services.MapServices;
-using Catan.Shared.Model;
 using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
+using Catan.Shared.Model.GameState.Inventory;
+using Catan.Shared.Request;
 using Catan.Shared.Response;
 
 namespace BLL.Services.Implementations
@@ -13,18 +14,19 @@ namespace BLL.Services.Implementations
     {
         private readonly IInMemoryDatabaseGame _inMemoryDatabaseGame;
         private readonly IMapService _mapService;
-        private readonly GameActionHandler _gameActionHandler;
+        private readonly GameActionHandlerFactory _gameActionHandlerFactory;
         public GameService(IInMemoryDatabaseGame inMemoryDatabaseGame, IMapService mapService)
         {
             _inMemoryDatabaseGame = inMemoryDatabaseGame;
             _mapService = mapService;
-			_gameActionHandler = new GameActionHandlerFactory().CreateActionHandler(GameType.Base); //Factory gyártsa nekünk ezt, megfelelő implementációkkal feltöltve!
+			_gameActionHandlerFactory = new GameActionHandlerFactory();
         }
         public InMemoryDatabaseGameResponses RegisterGame(Guid guid, Game game)
         {
-            var newMap = _mapService.GenerateMap(GameType.Base); //TODO átadni paraméterként
+            var newMap = _mapService.GenerateMap(game.DLCs);
             game.GameMap = newMap;
-            return _inMemoryDatabaseGame.AddGame(guid, game);
+			var handler = _gameActionHandlerFactory.CreateActionHandler(game.DLCs);
+            return _inMemoryDatabaseGame.AddGame(guid, game, handler);
         }
 		public GameServiceResponses StartGame(Guid guid)
 		{
@@ -33,9 +35,21 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
+
+			foreach (var player in game.PlayerList)
+			{
+				player.Inventory.AddResource(Resources.Wood, 5);
+				player.Inventory.AddResource(Resources.Wheat, 5);
+				player.Inventory.AddResource(Resources.Ore, 5);
+				player.Inventory.AddResource(Resources.Sheep, 5);
+				player.Inventory.AddResource(Resources.Brick, 5);
+			}
+
+
+
 			game.InitialRound = true;
 			game.InitialRoundCount = game.PlayerList.Count * 2;
-			game.ActivePlayer = game.PlayerList[new Random().Next(1, game.PlayerList.Count)];
+			game.ActivePlayer = game.PlayerList[new Random().Next(0, game.PlayerList.Count)];
 			return GameServiceResponses.Success;
 		}
 		public Map? GetGameMap(Guid guid)
@@ -150,6 +164,27 @@ namespace BLL.Services.Implementations
 			}
 			return res;
 		}
+		public FetchCardInventoryDTO? GetCards(Guid guid, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return null;
+			}
+			var player = game.PlayerList.First(p => p.Name == name);
+			var res = new FetchCardInventoryDTO();
+			res.OthersInventory = new Dictionary<string, int>();
+			res.CardInventory = player.CardInventory.Inventory;
+			foreach (var otherPlayer in game.PlayerList)
+			{
+				if (otherPlayer.Name is not null && otherPlayer.Name != name)
+				{
+					var number = otherPlayer.CardInventory.GetCardsCount();
+					res.OthersInventory.Add(otherPlayer.Name, number);
+				}
+			}
+			return res;
+		}
 		public GameServiceResponses IsGameOver(Guid guid)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
@@ -157,7 +192,12 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return game.GameOver ? GameServiceResponses.GameOver : GameServiceResponses.GameInProgress; //TODO why game over???
+			if (game.PlayerList.Any(p => p.Points >= game.PointsToWin))
+			{
+				game.Winner = game.PlayerList.First(p => p.Points >= game.PointsToWin);
+				return GameServiceResponses.GameOver;
+			}
+			return GameServiceResponses.GameInProgress;
 		}
 		public List<Player>? GetPlayers(Guid guid)
 		{
@@ -184,44 +224,110 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteEndTurnAction(game, name);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteEndTurnAction(game, name);
 		}
-		public GameServiceResponses ClaimCorner(Guid guid, int id, string name)
+		public GameServiceResponses BuildVillage(Guid guid, int id, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteClaimCornerAction(game, id, name);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuildVillageAction(game, id, name);
 		}
-		public GameServiceResponses ClaimEdge(Guid guid, int id, string name)
+		public GameServiceResponses BuildCity(Guid guid, int id, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteClaimEdgeAction(game, id, name);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuildCityAction(game, id, name);
 		}
-		public GameServiceResponses ClaimInitialCorner(Guid guid, int id, string name)
+		public GameServiceResponses BuildRoad(Guid guid, int id, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteClaimInitialCornerAction(game, id, name);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuildRoadAction(game, id, name);
 		}
-		public GameServiceResponses ClaimInitialRoad(Guid guid, int id, string name)
+		public GameServiceResponses BuildShip(Guid guid, int id, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			var response = _gameActionHandler.ExecuteClaimInitialEdgeAction(game, id, name);
-			return response;
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuildShipAction(game, id, name);
+		}
+		public GameServiceResponses BuildInitialVillage(Guid guid, int id, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuildInitialVillageAction(game, id, name);
+		}
+		public GameServiceResponses BuildInitialRoad(Guid guid, int id, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuildInitialRoadAction(game, id, name);
+		}
+		public GameServiceResponses BuildInitialShip(Guid guid, int id, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuildInitialShipAction(game, id, name);
 		}
 		public GameServiceResponses MoveRobber(Guid guid, int id, string name)
 		{
@@ -230,16 +336,26 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteMoveRobberAction(game, id, name);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteMoveRobberAction(game, id, name);
 		}
-		public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer) // TODO  configolható lehessen tengeri városoknál a kereskedés aránya (1:2 vagy 1:3 akár)
+		public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteRegisterTradeOfferWithBankAction(game, offer);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteRegisterTradeOfferWithBankAction(game, offer);
 		}
 		public GameServiceResponses RegisterTradeOffer(Guid guid, TradeOffer offer)
 		{
@@ -248,7 +364,12 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteRegisterTradeOfferAction(game, offer);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteRegisterTradeOfferAction(game, offer);
 		}
 		public GameServiceResponses AcceptTradeOffer(Guid guid, TradeOffer offer, string name)
 		{
@@ -257,16 +378,26 @@ namespace BLL.Services.Implementations
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteAcceptTradeOfferAction(game, offer, name);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteAcceptTradeOfferAction(game, offer, name);
 		}
-		public GameServiceResponses ThrowResources(Guid guid, Inventory thrownResources, string name) //TODO idk mit???
+		public GameServiceResponses ThrowResources(Guid guid, AbstractInventory thrownResources, string name) //TODO idk mit???
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
 			{
 				return GameServiceResponses.InvalidGame;
 			}
-			return _gameActionHandler.ExecuteThrowResourcesAction(game, thrownResources, name);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteThrowResourcesAction(game, thrownResources, name);
 		}
 		public GameServiceResponses RollDices(Guid guid, string name)
         {
@@ -275,7 +406,53 @@ namespace BLL.Services.Implementations
             {
                 return GameServiceResponses.InvalidGame;
             }
-			return _gameActionHandler.ExecuteDiceRollAction(game, name);
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteDiceRollAction(game, name);
         }
-    }
+		public GameServiceResponses BuyCard(Guid guid, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecuteBuyCardAction(game, name);
+		}
+		public GameServiceResponses PlayCard(Guid guid, CardType card, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return GameServiceResponses.InvalidGame;
+			}
+			var handler = _inMemoryDatabaseGame.GetGameActionHandler(game);
+			if (handler is null)
+			{
+				return GameServiceResponses.HandlerDoesntExist;
+			}
+			return handler.ExecutePlayCardAction(game, card, name);
+		}
+
+
+		public bool? HaveToThrowResources(Guid guid)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return null;
+			}
+			return game.ResolveResourceCount;
+		}
+        
+		
+	}
 }

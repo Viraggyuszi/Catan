@@ -22,14 +22,15 @@ namespace BLL.Services.Implementations
             _gameService = gameService;
             _inMemoryDatabaseLobby = inMemoryDatabaseLobby;
         }
-        public InMemoryDatabaseLobbyResponses CreateLobby(string name)
+        public InMemoryDatabaseLobbyResponses CreateLobby(string name, Dictionary<GameType,bool> DLCs)
         {
             var guid = Guid.NewGuid();
             var lobby = new Lobby
             {
                 Name = name,
                 Players = new List<Player>(),
-                GuID = guid
+                GuID = guid,
+                DLCs = DLCs
             };
             return _inMemoryDatabaseLobby.AddLobby(guid, lobby);
         }
@@ -51,12 +52,22 @@ namespace BLL.Services.Implementations
             {
                 return InMemoryDatabaseGameResponses.CreateGameFailed;
             }
-
-
-            game.GameType = GameType.Base; //TODO
+			
+            /*
+             * Since there are no DLCs atm that gives other dices then the default ones, 
+             * the two base dices are hard coded, but it should be refactored in the future.
+             */
             game.Dices.Add(new BaseDice());
             game.Dices.Add(new BaseDice());
 
+            /*
+             * Since there are only 2 options there's no reason to make the points calculation
+             * harder, but it should be improved in the future.
+             */
+            if (game.DLCs.GetValueOrDefault(GameType.Seafarer))
+            {
+                game.PointsToWin = 13;
+            }
 
             var response = _gameService.RegisterGame(guid, game);
             if (response == InMemoryDatabaseGameResponses.Success)
