@@ -5,6 +5,7 @@ using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
 using Catan.Shared.Model.GameState.Inventory;
+using Catan.Shared.Request;
 using Catan.Shared.Response;
 
 namespace BLL.Services.Implementations
@@ -159,6 +160,27 @@ namespace BLL.Services.Implementations
 				{
 					var number = player.Inventory.GetAllResourcesCount();
 					res.Add(player.Name, number);
+				}
+			}
+			return res;
+		}
+		public FetchCardInventoryDTO? GetCards(Guid guid, string name)
+		{
+			var game = _inMemoryDatabaseGame.GetGame(guid);
+			if (game is null)
+			{
+				return null;
+			}
+			var player = game.PlayerList.First(p => p.Name == name);
+			var res = new FetchCardInventoryDTO();
+			res.OthersInventory = new Dictionary<string, int>();
+			res.CardInventory = player.CardInventory.Inventory;
+			foreach (var otherPlayer in game.PlayerList)
+			{
+				if (otherPlayer.Name is not null && otherPlayer.Name != name)
+				{
+					var number = otherPlayer.CardInventory.GetCardsCount();
+					res.OthersInventory.Add(otherPlayer.Name, number);
 				}
 			}
 			return res;
@@ -321,7 +343,7 @@ namespace BLL.Services.Implementations
 			}
 			return handler.ExecuteMoveRobberAction(game, id, name);
 		}
-		public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer) // TODO  configolható lehessen tengeri városoknál a kereskedés aránya (1:2 vagy 1:3 akár)
+		public GameServiceResponses RegisterTradeOfferWithBank(Guid guid, TradeOffer offer)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)
@@ -431,19 +453,6 @@ namespace BLL.Services.Implementations
 			return game.ResolveResourceCount;
 		}
         
-		public CardInventory? GetCards(Guid guid, string name)
-		{
-			var game = _inMemoryDatabaseGame.GetGame(guid);
-			if (game is null)
-			{
-				return null;
-			}
-			var player = game.PlayerList.First(p => p.Name == name);
-			if (player is null)
-			{
-				return null;
-			}
-			return player.CardInventory;
-		}
+		
 	}
 }

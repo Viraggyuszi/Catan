@@ -8,7 +8,7 @@ namespace Catan.Shared.Model.GameState.Inventory
 {
 	public class CardInventory
 	{
-		Dictionary<CardType,int> Inventory = new Dictionary<CardType,int>();
+		public Dictionary<CardType,int> Inventory { get; set; } = new Dictionary<CardType,int>();
 		public CardInventory() 
 		{
 			Inventory.Clear();
@@ -27,6 +27,10 @@ namespace Catan.Shared.Model.GameState.Inventory
 		public void RemoveCard(CardType type)
 		{
 			Inventory[type] -= 1;
+		}
+		public int GetCardsCount()
+		{
+			return Inventory.Values.Sum();
 		}
 	}
 }

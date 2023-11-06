@@ -317,6 +317,10 @@ namespace Catan.Server.Hubs
 		{
 			await Clients.Group(guid.ToString()).SendAsync("FetchTradeOffers");
 		}
+		private async Task NotifyCardsChanged(Guid guid)
+		{
+			await Clients.Group(guid.ToString()).SendAsync("FetchCards");
+		}
 		private async Task NotifyMapChanged(Guid guid)
 		{
 			await Clients.Group(guid.ToString()).SendAsync("ProcessMap", GetMap(guid.ToString()));
@@ -535,7 +539,7 @@ namespace Catan.Server.Hubs
 			await NotifyClients(Guid.Parse(guidstring));
 			await NotifyTradeOffersChanged(new Guid(guidstring));
 		}
-		public CardInventory? GetCards(Actor actor, string guidstring)
+		public FetchCardInventoryDTO? GetCards(Actor actor, string guidstring)
 		{
 			if (!ActorIdentity.CheckActorIdentity(actor))
 			{
@@ -561,7 +565,7 @@ namespace Catan.Server.Hubs
 					return;
 				}
 				await NotifyClients(guid);
-				await Clients.Caller.SendAsync("FetchCards");
+				await NotifyCardsChanged(guid);
 			}
 		}
 		public async Task PlayCard(Actor actor, string guidstring, CardType card)
@@ -581,7 +585,7 @@ namespace Catan.Server.Hubs
 					return;
 				}
 				await NotifyClients(guid);
-				await Clients.Caller.SendAsync("FetchCards");
+				await NotifyCardsChanged(guid);
 			}
 		}
 	}

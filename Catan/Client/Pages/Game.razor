@@ -19,15 +19,16 @@
 				
 				@foreach (var player in PlayerList) 
 				{
-					if (player.Name == actor.Name)
+					if (player.Name == CurrentPlayerName)
 					{
 						<div class="p-2 px-4">
 							<div class="card h-100 border-dark PlayerCard">
-								<div class="card-header" style="background-color:@player.Color;min-height:50px;"></div>
+								<div class="card-header" style="background-color:@player.Color;min-height:50px; border-color:yellow; border:solid;"></div>
 								<div class="card-body">
 									@player.Name <br>
 									points: @player.Points <br>
 									resources: @(inventory.Values.Sum())
+									cards: @(cardInventory.Values.Sum())
 								</div>
 							</div>
 						</div>
@@ -36,11 +37,12 @@
 					{
 						<div class="p-2 px-4">
 							<div class="card h-100 border-dark PlayerCard">
-								<div class="card-header" style="background-color:@player.Color;opacity:0.5;min-height:50px;"></div>
+								<div class="card-header" style="background-color:@player.Color;min-height:50px;"></div>
 								<div class="card-body">
 									@player.Name <br>
 									points: @player.Points <br>
 									resources: @(nameResourceCount.GetValueOrDefault(player.Name!))
+									cards: @(nameCardCount.GetValueOrDefault(player.Name!))
 								</div>
 							</div>
 						</div>
@@ -435,9 +437,29 @@
 </div>
 
 <button @onclick="BuyCard"> Kártya</button>
-<button @onclick="()=>PlayCard(CardType.Knight)"> play knight</button>
+<button @onclick="()=>makingCard=true"> play card</button>
 
 <p>@errorMessage</p>
+
+<div>
+	<table>
+		<tr>
+			<td colspan="3"> Cards Inventory</td>
+		</tr>
+		<tr>
+			<td @onclick="()=>PlayCard(CardType.Knight)">Lovag</td>
+			<td @onclick="()=>PlayCard(CardType.RoadBuilder)">Ut</td>
+			<td @onclick="()=>PlayCard(CardType.ExtraPoint)">+1 pont</td>
+		</tr>
+		<tr>
+			<td>@cardInventory[CardType.Knight]</td>
+			<td>@cardInventory[CardType.RoadBuilder]</td>
+			<td>@cardInventory[CardType.ExtraPoint]</td>
+		</tr>
+	</table>
+</div>
+
+
 @code {
 
 
@@ -450,6 +472,7 @@
 	private bool makingRoad = false;
 	private bool makingCity = false;
 	private bool makingShip = false;
+	private bool makingCard = false;
 
 	private bool ownTurn = false;
 	private bool diceRolled = false;
@@ -563,6 +586,13 @@
 	}
 	private List<Player> PlayerList = new List<Player>();
 	private Dictionary<string, int> nameResourceCount = new Dictionary<string, int>();
+	private Dictionary<string, int> nameCardCount = new Dictionary<string, int>();
+	private Dictionary<CardType, int> cardInventory = new Dictionary<CardType, int>
+	{
+		{CardType.Knight,0},
+		{CardType.RoadBuilder,0},
+		{CardType.ExtraPoint,0}
+	};
 	private async Task UpdatePlayerList()
 	{
 		var response = await hubConnection!.InvokeAsync<List<Player>>("GetPlayerList", actor, Guid);
@@ -698,10 +728,15 @@
 	{
 		hubConnection!.On("FetchCards", async () =>
 		{
-			var response = await hubConnection!.InvokeAsync<CardInventory?>("GetCards", actor, Guid);
+			var response = await hubConnection!.InvokeAsync<FetchCardInventoryDTO?>("GetCards", actor, Guid);
 			if (response is not null)
 			{
-				//TODO megjeleníteni a kártyákat
+				foreach (var dictionaryItem in response.CardInventory)
+				{
+					cardInventory[dictionaryItem.Key] = dictionaryItem.Value;
+				}
+				nameCardCount = response.OthersInventory;
+				StateHasChanged();
 			}
 		});
 		hubConnection!.On<Map>("ProcessMap", async (map) =>
@@ -892,7 +927,7 @@
 			}
 			if (makingShip)
 			{
-				await hubConnection!.SendAsync("BuildShip", actor, Guid, id);
+				await hubConnection!.SendAsync("BuildInitialShip", actor, Guid, id);
 			}
 		}
 		else if (ownTurn)
@@ -950,6 +985,9 @@
 	}
 	private async Task PlayCard(CardType card)
 	{
-		await hubConnection!.SendAsync("PlayCard", actor, Guid, card);
+		if (makingCard)
+		{
+			await hubConnection!.SendAsync("PlayCard", actor, Guid, card);
+		}
 	}
 }
