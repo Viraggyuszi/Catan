@@ -16,7 +16,7 @@
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-md-2 d-flex flex-column">
-				
+				@*PLAYERS INFOS*@
 				@foreach (var player in PlayerList) 
 				{
 					if (player.Name == CurrentPlayerName)
@@ -47,7 +47,7 @@
 							</div>
 						</div>
 					}
-				} @*PLAYERS INFOS*@
+				}
 				<div class="mt-auto"> @*INVENTORY*@
 					<div class="d-flex flex-row justify-content-evenly" style="background-color:rgb(250,227,144);opacity:0.8;">
 						@foreach (var inventoryElement in inventory)
@@ -77,67 +77,144 @@
 							</div>
 						}
 					</div>
+					<div class="d-flex flex-row justify-content-evenly" style="background-color:rgb(250,227,144);opacity:0.8;">
+						@foreach (var inventoryElement in cardInventory)
+						{
+							<div>
+								<span style="min-width:12px">
+									@inventoryElement.Value.ToString()
+								</span>
+								@switch (inventoryElement.Key)
+								{
+									case CardType.Knight:
+										<img src="/images/resources/knight.png" width="35" height="35" />
+										break;
+									case CardType.ExtraPoint:
+										<img src="/images/resources/plusone.png" width="35" height="35" />
+										break;
+									case CardType.RoadBuilder:
+										<img src="/images/resources/roadbuilder.png" width="35" height="35" />
+										break;
+								}
+							</div>
+						}
+					</div>
 				</div>
 			</div>
 			<div class="col-md-7"> @*MAP*@
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="1500" xmlns:xlink="http://www.w3.org/1999/xlink">
-					<defs>
+				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="940" xmlns:xlink="http://www.w3.org/1999/xlink">
+					@*PATTERNS*@
+					<defs> 
 						@foreach (var hexagon in hexagons)
 						{
-							var x = hexagon.Base.X + hexagonSize * Math.Sqrt(3) - 60.4;
-							var y = hexagon.Base.Y + hexagonSize - 1;
-							@*PATTERNS*@
-							switch (hexagon.Field.Type)
+							if (hexagonSize==80)
 							{
-								case TerrainType.Desert:
-									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="162" height="162" xlink:href="/images/tiles/desert.png"></image>
-									</pattern>
-									break;
-								case TerrainType.Unknown:
-									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="162" height="162" xlink:href="/images/tiles/fog.png"></image>
-									</pattern>
-									break;
-								case TerrainType.GoldField:
-									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="162" height="162" xlink:href="/images/tiles/goldfield.png"></image>
-									</pattern>
-									break;
-								case TerrainType.Cropfield:
-									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="162" height="162" xlink:href="/images/tiles/wheat.png"></image>
-									</pattern>
-									break;
-								case TerrainType.Forest:
-									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="162" height="162" xlink:href="/images/tiles/forest.png"></image>
-									</pattern>
-									break;
-								case TerrainType.Mountains:
-									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="162" height="162" xlink:href="/images/tiles/mountains.png"></image>
-									</pattern>
-									break;
-								case TerrainType.Quarry:
-									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="162" height="162" xlink:href="/images/tiles/quarry.png"></image>
-									</pattern>
-									break;
-								case TerrainType.Grassland:
-									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="162" height="162" xlink:href="/images/tiles/grassland.png"></image>
-									</pattern>
-									break;
-								case TerrainType.Sea:
-									<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
-										<image width="162" height="162" xlink:href="/images/tiles/sea.png"></image>
-									</pattern>
-									break;
-							} 
+								var x = hexagon.Base.X + hexagonSize * Math.Sqrt(3) - 60.4;
+								var y = hexagon.Base.Y + hexagonSize - 1;
+								switch (hexagon.Field.Type)
+								{
+									case TerrainType.Desert:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="162" height="162" xlink:href="/images/tiles/desert.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Unknown:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="162" height="162" xlink:href="/images/tiles/fog.png"></image>
+										</pattern>
+										break;
+									case TerrainType.GoldField:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="162" height="162" xlink:href="/images/tiles/goldfield.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Cropfield:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="162" height="162" xlink:href="/images/tiles/wheat.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Forest:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="162" height="162" xlink:href="/images/tiles/forest.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Mountains:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="162" height="162" xlink:href="/images/tiles/mountains.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Quarry:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="162" height="162" xlink:href="/images/tiles/quarry.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Grassland:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="162" height="162" xlink:href="/images/tiles/grassland.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Sea:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="162" height="162" xlink:href="/images/tiles/sea.png"></image>
+										</pattern>
+										break;
+								}
+							}
+							else
+							{
+								var x = hexagon.Base.X + hexagonSize * Math.Sqrt(3) - 40;
+								var y = hexagon.Base.Y + hexagonSize - 1;
+								switch (hexagon.Field.Type)
+								{
+									case TerrainType.Desert:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="110" height="110" xlink:href="/images/tiles/desert.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Unknown:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="110" height="110" xlink:href="/images/tiles/fog.png"></image>
+										</pattern>
+										break;
+									case TerrainType.GoldField:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="110" height="110" xlink:href="/images/tiles/goldfield.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Cropfield:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="110" height="110" xlink:href="/images/tiles/wheat.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Forest:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="110" height="110" xlink:href="/images/tiles/forest.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Mountains:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="110" height="110" xlink:href="/images/tiles/mountains.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Quarry:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="110" height="110" xlink:href="/images/tiles/quarry.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Grassland:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="110" height="110" xlink:href="/images/tiles/grassland.png"></image>
+										</pattern>
+										break;
+									case TerrainType.Sea:
+										<pattern id="@(hexagons.IndexOf(hexagon))" x="@DoubleToString(x)" y="@DoubleToString(y)" height="@(hexagonSize*2)" width="@(hexagonSize*2)" patternUnits="userSpaceOnUse">
+											<image width="110" height="110" xlink:href="/images/tiles/sea.png"></image>
+										</pattern>
+										break;
+								}
+							}
 						}
 					</defs>
-
 					@*HEXAGONS*@
 					@foreach (var hexagon in hexagons)
 					{
@@ -145,15 +222,33 @@
 								@onclick="()=>ClickOnHexagon(hexagon.Field.Id)" stroke="black" stroke-width="1"></polygon>
 						@if (hexagon.Field.Type != TerrainType.Desert && hexagon.Field.Type != TerrainType.Sea && hexagon.Field.Type!=TerrainType.Unknown)
 						{
-							<circle cx="@DoubleToString(hexagon.Base.X)" cy="@DoubleToString(hexagon.Base.Y)" r="25" fill="beige" />
-							<text>
-								<text x="@DoubleToString(hexagon.Base.X)" y="@DoubleToString(hexagon.Base.Y+12.5)" font-size="2em"
-									  fill="black" text-anchor="middle">@hexagon.Field.Number</text>
-							</text>
+							if (hexagonSize==80)
+							{
+								<circle cx="@DoubleToString(hexagon.Base.X)" cy="@DoubleToString(hexagon.Base.Y)" r="25" fill="beige" />
+								<text>
+									<text x="@DoubleToString(hexagon.Base.X)" y="@DoubleToString(hexagon.Base.Y+12.5)" font-size="2em"
+										  fill="black" text-anchor="middle">@hexagon.Field.Number</text>
+								</text>
+							}
+							else
+							{
+								<circle cx="@DoubleToString(hexagon.Base.X)" cy="@DoubleToString(hexagon.Base.Y)" r="15" fill="beige" />
+								<text>
+									<text x="@DoubleToString(hexagon.Base.X)" y="@DoubleToString(hexagon.Base.Y+6.5)" font-size="1.2em"
+										  fill="black" text-anchor="middle">@hexagon.Field.Number</text>
+								</text>
+							}
 						}
 						@if (hexagon.Field.IsRobbed)
 						{
-							<circle cx="@DoubleToString(hexagon.Base.X-30)" cy="@DoubleToString(hexagon.Base.Y)" r="15" fill="black" />
+							if (hexagonSize==80)
+							{
+								<circle cx="@DoubleToString(hexagon.Base.X-30)" cy="@DoubleToString(hexagon.Base.Y)" r="15" fill="black" />
+							}
+							else
+							{
+								<circle cx="@DoubleToString(hexagon.Base.X-30)" cy="@DoubleToString(hexagon.Base.Y)" r="8" fill="black" />
+							}
 						}
 					}
 					@*CORNER PLACEHOLDERS*@
@@ -177,15 +272,17 @@
 							if (makingCity)
 							{
 								<circle class="cornerCircle" cx="@DoubleToString(cornerCircle.BaseVertex.X)" cy="@DoubleToString(cornerCircle.BaseVertex.Y)" r="10"
-							@onclick="()=>ClickOnCornerCircle(cornerCircle.Corner.Id)" fill="@cornerCircle.Corner.Player.Color" fill-opacity="1" stroke="green" stroke-width="2" stroke-opacity="0.9" />
+								@onclick="()=>ClickOnCornerCircle(cornerCircle.Corner.Id)" fill="@cornerCircle.Corner.Player.Color" fill-opacity="1" stroke="green" stroke-width="2" stroke-opacity="0.9" />
 							}
+							<polyline points=@cornerCircle.GetSettlementString() fill="@cornerCircle.Corner.Player.Color" fill-opacity="1" stroke="black" stroke-width="1" stroke-opacity="0.9" />
 							<circle class="cornerCircle" cx="@DoubleToString(cornerCircle.BaseVertex.X)" cy="@DoubleToString(cornerCircle.BaseVertex.Y)" r="10"
-							@onclick="()=>ClickOnCornerCircle(cornerCircle.Corner.Id)" fill="@cornerCircle.Corner.Player.Color" fill-opacity="1" stroke="black" stroke-width="2" stroke-opacity="0.9" />
+							@onclick="()=>ClickOnCornerCircle(cornerCircle.Corner.Id)" fill="@cornerCircle.Corner.Player.Color" fill-opacity="0"/>
 						}
 						else if (cornerCircle.Corner.Level == 2)
 						{
-							<rect x="@DoubleToString(cornerCircle.BaseVertex.X-10)" y="@DoubleToString(cornerCircle.BaseVertex.Y-10)" width="20" height="20"
-						  @onclick="()=>ClickOnCornerCircle(cornerCircle.Corner.Id)" fill="@cornerCircle.Corner.Player.Color" fill-opacity="1" stroke="black" stroke-width="2" stroke-opacity="0.9" />
+							<polyline points=@cornerCircle.GetCityString() fill="@cornerCircle.Corner.Player.Color" fill-opacity="1" stroke="black" stroke-width="1" stroke-opacity="0.9" />
+							<circle class="cornerCircle" cx="@DoubleToString(cornerCircle.BaseVertex.X)" cy="@DoubleToString(cornerCircle.BaseVertex.Y)" r="10"
+							@onclick="()=>ClickOnCornerCircle(cornerCircle.Corner.Id)" fill="@cornerCircle.Corner.Player.Color" fill-opacity="0" />
 						}
 					}
 					@*EDGE PLACEHOLDERS*@
@@ -207,7 +304,6 @@
 						}
 						else
 						{
-							@*TODO ELLENŐRZÉS HOVA LEHET MÉG RAKNI DOLGOKAT*@
 							if (makingRoad || makingShip)
 							{
 								<polygon points=@edgeLine.VerticesToString() fill="black" fill-opacity="0" stroke="green" stroke-width="2" stroke-opacity="0.9"
@@ -269,6 +365,14 @@
 									<img src="/images/resources/ore.png" width="40" height="40" />
 								</td>
 							</tr>
+							<tr>
+								<td>Development Card:</td>
+								<td>
+									<img src="/images/resources/wheat.png" width="40" height="40" />
+									<img src="/images/resources/ore.png" width="40" height="40" />
+									<img src="/images/resources/sheep.png" width="40" height="40" />
+								</td>
+							</tr>
 						</table>
 					</div>
 					<div class="d-flex flex-row-reverse m-3 p-3" style="min-height:100px;"> @*DICES*@
@@ -297,12 +401,18 @@
 							}
 						}
 					</div>
-					<div class="d-flex flex-row-reverse "> @* BUTTONS *@
+					<div class="d-flex flex-row-reverse m-3 p-3"> @* BUTTONS *@
 						<div class="p-2">
-							<button @onclick="EndTurn" disabled="@(!CanEndTurn())" style="margin:0px;border:0px;padding:0px;"> <img width="50" height="50" src="/images/dice/endturn.png" style="background-color:rgb(250,227,144);" /> </button>
+							<button @onclick="EndTurn" disabled="@(!CanEndTurn())" style="margin:0px;border:0px;padding:0px;"> <img width="60" height="60" src="/images/dice/endturn.png" style="background-color:rgb(250,227,144);" /> </button>
 						</div>
 						<div class="p-2">
-							<button @onclick="RollDice" disabled="@(!CanRollDice())" style="margin:0px;border:0px;padding:0px;"> <img width="50" height="50" src="/images/dice/rolldices.png" style="background-color:rgb(250,227,144);" /> </button>
+							<button @onclick="RollDice" disabled="true" style="margin:0px;border:0px;padding:0px;"> <img width="60" height="60" src="/images/dice/cards.png" style="background-color:rgb(250,227,144);" /> </button>
+						</div>
+						<div class="p-2">
+							<button @onclick="EndTurn" disabled="true" style="margin:0px;border:0px;padding:0px;"> <img width="60" height="60" src="/images/dice/trade.png" style="background-color:rgb(250,227,144);" /> </button>
+						</div>
+						<div class="p-2">
+							<button @onclick="RollDice" disabled="@(!CanRollDice())" style="margin:0px;border:0px;padding:0px;"> <img width="60" height="60" src="/images/dice/rolldices.png" style="background-color:rgb(250,227,144);" /> </button>
 						</div>
 					</div>
 				</div>
@@ -461,8 +571,14 @@
 
 
 @code {
-
-
+	private int CalculatePatternWidth()
+	{
+		return ((hexagonSize + 1) * 2);
+	}
+	private int CalculatePatternHeight()
+	{
+		return ((hexagonSize + 1) * 2);
+	}
 
 	private AbstractInventory throwResourcesInventory = new AbstractInventory();
 
@@ -473,6 +589,7 @@
 	private bool makingCity = false;
 	private bool makingShip = false;
 	private bool makingCard = false;
+
 
 	private bool ownTurn = false;
 	private bool diceRolled = false;
@@ -620,6 +737,9 @@
 	{
 		if (fields.Count==37)
 		{
+			hexagonStartingX = 280;
+			hexagonStartingY = 140;
+			hexagonSize = 80;
 			for (int i = 0; i < 4; i++)
 			{
 				hexagons.Add(new Hexagon(hexagonStartingX + i * hexagonSize * Math.Sqrt(3), hexagonStartingY, hexagonSize, fields[i]));
@@ -651,6 +771,9 @@
 		}
 		else
 		{
+			hexagonSize = 54;
+			hexagonStartingX = 60;
+			hexagonStartingY = 140;
 			//első sor van előrébb
 			for (int i = 0; i < 10; i++)
 			{
@@ -902,6 +1025,7 @@
 			if (makingSettlement)
 			{
 				await hubConnection!.SendAsync("BuildInitialVillage", actor, Guid, id);
+				makingSettlement = false;
 			}
 		}
 		else if (ownTurn)
@@ -909,10 +1033,12 @@
 			if (makingSettlement)
 			{
 				await hubConnection!.SendAsync("BuildVillage", actor, Guid, id);
+				makingSettlement = false;
 			}
 			if (makingCity)
 			{
 				await hubConnection!.SendAsync("BuildCity",actor,Guid,id);
+				makingCity = false;
 			}
 		}
 		StateHasChanged();
@@ -924,21 +1050,25 @@
 			if (makingRoad)
 			{
 				await hubConnection!.SendAsync("BuildInitialRoad", actor, Guid, id);
+				makingRoad = false;
 			}
 			if (makingShip)
 			{
 				await hubConnection!.SendAsync("BuildInitialShip", actor, Guid, id);
+				makingShip = false;
 			}
 		}
 		else if (ownTurn)
 		{
 			if (makingRoad)
 			{
-				await hubConnection!.SendAsync("BuildRoad", actor, Guid, id);		
+				await hubConnection!.SendAsync("BuildRoad", actor, Guid, id);
+				makingRoad = false;
 			}
 			if (makingShip)
 			{
 				await hubConnection!.SendAsync("BuildShip", actor, Guid, id);
+				makingShip = false;
 			}
 		}
 		StateHasChanged();

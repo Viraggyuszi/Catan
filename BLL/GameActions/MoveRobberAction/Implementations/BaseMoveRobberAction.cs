@@ -22,6 +22,11 @@ namespace BLL.GameActions.MoveRobberAction.Implementations
 			{
 				return GameServiceResponses.RollDicesFirst;
 			}
+            if (!game.RobberNeedsMove)
+            {
+                return GameServiceResponses.RobberDoesntNeedToMove;
+            }
+            game.RobberNeedsMove = false;
 			var newRobbedField = game.GameMap.FieldList.FirstOrDefault(f => f.Id == fieldId);
             if (newRobbedField is null || newRobbedField.Type==TerrainType.Sea || newRobbedField.Type==TerrainType.Unknown)
             {

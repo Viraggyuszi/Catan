@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="BLL.Services.MapGenerator.Implementations.BaseGameMapGenerator">
+    <Position X="3.5" Y="4.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAAAAAAAAIAAAIEAAAAAAAAAAAAAAAQA=</HashCode>
+      <FileName>Services\MapGenerator\Implementations\BaseGameMapGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BLL.Services.MapGenerator.Implementations.SeafarerGameMapGenerator">
+    <Position X="8.25" Y="4.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAAAAAAAAIAAAIEAAAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>Services\MapGenerator\Implementations\SeafarerGameMapGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BLL.Services.MapGenerator.AbstractMapGenerator">
+    <Position X="6" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIgAAAAAEAAAwAIAAAIAAAAAAABAAAAAAQEAA=</HashCode>
+      <FileName>Services\MapGenerator\AbstractMapGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

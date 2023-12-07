@@ -77,6 +77,8 @@ namespace Catan.Shared.Response
         SuccessWithSevenRoll,
 		MoveRobberFirst,
 		ResolveSevenRollsFirst,
-		ResolveFreeRoadBuildingFirst
+		ResolveFreeRoadBuildingFirst,
+		RobberDoesntNeedToMove,
+		CantPlaceCornerToUnknown
 	}
 }

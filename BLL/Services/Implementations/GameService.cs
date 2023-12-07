@@ -1,9 +1,11 @@
 ﻿using BLL.GameActions;
 using BLL.Services.Interfaces;
 using BLL.Services.MapServices;
+using Catan.Shared.Model;
 using Catan.Shared.Model.GameMap;
 using Catan.Shared.Model.GameState;
 using Catan.Shared.Model.GameState.Dice;
+using Catan.Shared.Model.GameState.Dice.Implementations;
 using Catan.Shared.Model.GameState.Inventory;
 using Catan.Shared.Request;
 using Catan.Shared.Response;
@@ -23,7 +25,23 @@ namespace BLL.Services.Implementations
         }
         public InMemoryDatabaseGameResponses RegisterGame(Guid guid, Game game)
         {
-            var newMap = _mapService.GenerateMap(game.DLCs);
+			/*
+			* Since there are no DLCs atm that gives other dices then the default ones, 
+			* the two base dices are hard coded, but it should be refactored in the future.
+			*/
+			game.Dices.Add(new BaseDice());
+			game.Dices.Add(new BaseDice());
+
+			/*
+             * Since there are only 2 options there's no reason to make the points calculation
+             * harder, but it should be improved in the future.
+             */
+			if (game.DLCs.GetValueOrDefault(GameType.Seafarer))
+			{
+				game.PointsToWin = 13;
+			}
+
+			var newMap = _mapService.GenerateMap(game.DLCs);
             game.GameMap = newMap;
 			var handler = _gameActionHandlerFactory.CreateActionHandler(game.DLCs);
             return _inMemoryDatabaseGame.AddGame(guid, game, handler);
@@ -36,13 +54,14 @@ namespace BLL.Services.Implementations
 				return GameServiceResponses.InvalidGame;
 			}
 
+			// TODO remove after testing
 			foreach (var player in game.PlayerList)
 			{
-				player.Inventory.AddResource(Resources.Wood, 5);
-				player.Inventory.AddResource(Resources.Wheat, 5);
-				player.Inventory.AddResource(Resources.Ore, 5);
-				player.Inventory.AddResource(Resources.Sheep, 5);
-				player.Inventory.AddResource(Resources.Brick, 5);
+				player.Inventory.AddResource(Resources.Wood, 15);
+				player.Inventory.AddResource(Resources.Wheat, 15);
+				player.Inventory.AddResource(Resources.Ore, 15);
+				player.Inventory.AddResource(Resources.Sheep, 15);
+				player.Inventory.AddResource(Resources.Brick, 15);
 			}
 
 
@@ -385,7 +404,7 @@ namespace BLL.Services.Implementations
 			}
 			return handler.ExecuteAcceptTradeOfferAction(game, offer, name);
 		}
-		public GameServiceResponses ThrowResources(Guid guid, AbstractInventory thrownResources, string name) //TODO idk mit???
+		public GameServiceResponses ThrowResources(Guid guid, AbstractInventory thrownResources, string name)
 		{
 			var game = _inMemoryDatabaseGame.GetGame(guid);
 			if (game is null)

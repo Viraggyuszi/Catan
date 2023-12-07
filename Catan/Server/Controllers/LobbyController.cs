@@ -31,7 +31,7 @@ namespace Catan.Server.Controllers
 				throw new Exception("Using other player's name");
 			}
 			var lobby= _lobbyService.CreateLobby(playerLobbyDTO.Lobby!.Name!,playerLobbyDTO.DLCs);
-            return new ApiDTO<InMemoryDatabaseLobbyResponses>() { Success = lobby == InMemoryDatabaseLobbyResponses.Success, Value = lobby }; //TODO kezelni kliensoldalon
+            return new ApiDTO<InMemoryDatabaseLobbyResponses>() { Success = lobby == InMemoryDatabaseLobbyResponses.Success, Value = lobby };
         }
 
         [HttpGet("getall")]
@@ -50,7 +50,7 @@ namespace Catan.Server.Controllers
 			}
             Player player = new Player { Name = playerLobbyDTO.Actor.Name };
 			var response=_lobbyService.AddPlayerToLobby(player, playerLobbyDTO.Lobby.GuID);
-			return new ApiDTO<InMemoryDatabaseLobbyResponses> { Success = response==InMemoryDatabaseLobbyResponses.Success, Value = response }; //TODO kezelni kliens oldalon
+			return new ApiDTO<InMemoryDatabaseLobbyResponses> { Success = response==InMemoryDatabaseLobbyResponses.Success, Value = response };
         }
 
         [HttpPost("leave")]
@@ -62,7 +62,7 @@ namespace Catan.Server.Controllers
 			}
 			Player player = new Player { Name = playerLobbyDTO.Actor!.Name };
 			var response = _lobbyService.RemovePlayerFromLobby(player, playerLobbyDTO.Lobby!.GuID);
-            return new ApiDTO<InMemoryDatabaseLobbyResponses> { Success = response == InMemoryDatabaseLobbyResponses.Success, Value = response }; //TODO kezelni kliens oldalon
+            return new ApiDTO<InMemoryDatabaseLobbyResponses> { Success = response == InMemoryDatabaseLobbyResponses.Success, Value = response };
         }
 
         [HttpPost("start")]

@@ -27,22 +27,22 @@ namespace BLL.GameActions
 {
     public class GameActionHandler
     {
-		public required IBuildVillageAction? BuildVillageAction { private get; init; }
-		public required IBuildCityAction? BuildCityAction { private get; init; }
-		public required IBuildRoadAction? BuildRoadAction { private get; init; }
-		public required IEndTurnAction? EndTurnAction { private get; init; }
-		public required IBuildInitialVillageAction? BuildInitialVillageAction { private get; init; }
-		public required IBuildInitialRoadAction? BuildInitialRoadAction { private get; init; }
-        public required IBuildInitialShipAction? BuildInitialShipAction { private get; init; }
-		public required IMoveRobberAction? MoveRobberAction { private get; init; }
-		public required IRegisterTradeOfferWithBankAction? RegisterTradeOfferWithBankAction { private get; init; }
-		public required IRegisterTradeOfferAction? RegisterTradeOfferAction { private get; init; }
-		public required IAcceptTradeOfferAction? AcceptTradeOfferAction { private get; init; }
-		public required IThrowResourcesAction? ThrowResourcesAction { private get; init; }
-		public required IDiceRollAction? RollDiceAction { private get; init; }
-        public required IBuildShipAction? BuildShipAction { private get; init; }
-        public required IBuyCardAction? BuyCardAction { private get; init; }
-        public required IPlayCardAction? PlayCardAction { private get; init; }
+		public IBuildVillageAction? BuildVillageAction { private get; init; } = null;
+		public IBuildCityAction? BuildCityAction { private get; init; } = null;
+		public IBuildRoadAction? BuildRoadAction { private get; init; } = null;
+		public IEndTurnAction? EndTurnAction { private get; init; } = null;
+		public IBuildInitialVillageAction? BuildInitialVillageAction { private get; init; } = null;
+		public IBuildInitialRoadAction? BuildInitialRoadAction { private get; init; } = null;
+        public IBuildInitialShipAction? BuildInitialShipAction { private get; init; } = null;
+		public IMoveRobberAction? MoveRobberAction { private get; init; } = null;
+		public IRegisterTradeOfferWithBankAction? RegisterTradeOfferWithBankAction { private get; init; } = null;
+		public IRegisterTradeOfferAction? RegisterTradeOfferAction { private get; init; } = null;
+		public IAcceptTradeOfferAction? AcceptTradeOfferAction { private get; init; } = null;
+		public IThrowResourcesAction? ThrowResourcesAction { private get; init; } = null;
+		public IDiceRollAction? RollDiceAction { private get; init; } = null;
+        public IBuildShipAction? BuildShipAction { private get; init; } = null;
+        public IBuyCardAction? BuyCardAction { private get; init; } = null;
+        public IPlayCardAction? PlayCardAction { private get; init; } = null;
 
 		public GameServiceResponses ExecuteBuyCardAction(Game game, string name)
 		{

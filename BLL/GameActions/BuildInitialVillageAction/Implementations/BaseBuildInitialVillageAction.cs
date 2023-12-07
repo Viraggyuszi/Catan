@@ -30,6 +30,10 @@ namespace BLL.GameActions.BuildInitialVillageAction.Implementations
 			{
 				return GameServiceResponses.CantPlaceCornerToSea;
 			}
+			if (corner.Fields.All(f => f.Type == Catan.Shared.Model.GameMap.TerrainType.Unknown))
+			{
+				return GameServiceResponses.CantPlaceCornerToUnknown;
+			}
 			if (corner.Level == -1)
 			{
 				return GameServiceResponses.CantPlaceVillageNextToOtherVillage;

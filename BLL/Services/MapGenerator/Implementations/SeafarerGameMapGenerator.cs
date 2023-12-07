@@ -208,7 +208,7 @@ namespace BLL.Services.MapGenerator.Implementations
 					{
 						fieldRow.Add(CreateFieldWithNumberAndTerrain(baseIslandNumbersList, BaseIslandTerrainsList));
 					}
-					fieldRow.Add(new Field { Number = 0, Type = TerrainType.Desert, IsRobbed = false });
+					fieldRow.Add(new Field { Number = 0, Type = TerrainType.Desert, IsRobbed = true });
 					for (int j = 0; j < 2; j++)
 					{
 						fieldRow.Add(CreateFieldWithNumberAndTerrain(baseIslandNumbersList, BaseIslandTerrainsList));
