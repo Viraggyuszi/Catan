@@ -10,18 +10,25 @@
 
 @if (lobbyCreating)
 {
-	<div class="container-fluid">
-		<div class="col-md-4">
-			<div class="input-group">
-				<input type="text" class="form-control" placeholder="Name of new lobby" @bind-value=NewLobbyName>
-				<input type="checkbox" @bind-value=Seafarer>
-				<div class="input-group-append">
-					<button class="btn btn-primary" @onclick=CreateNewLobby>Save</button>
-					<button class="btn btn-secondary" @onclick=CancelNewLobbyCreating>Cancel</button>
-				</div>
+	<div class="col-md-4">
+		<div class="form-group">
+			<label for="RoomName">Lobby Name</label>
+			<input type="text" class="form-control" id="RoomName" placeholder="Name of new lobby" @bind-value=NewLobbyName>
+			<small id="RoomNameHelp" class="form-text text-muted">This name will be visible for everyone</small>
+		</div>
+		<div class="form-group">
+			<div class="form-check form-switch">
+				<input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" @bind-value=Seafarer>
+				<label class="form-check-label" for="flexSwitchCheckDefault">Seafarer</label>
 			</div>
 		</div>
+
+		<button class="btn btn-primary" @onclick=CreateNewLobby>Save</button>
+		<button class="btn btn-secondary" @onclick=CancelNewLobbyCreating>Cancel</button>
 	</div>
+
+
+	
 }
 else
 {
@@ -41,7 +48,10 @@ else
 								j++;
 								<div class="p-2 px-4 col-md-4">
 									<div class="card h-100 border-dark">
-										<div class="card-header">@lobby.Name</div>
+										<div class="card-header">
+											<p>Lobby's Name: @lobby.Name</p>
+											<p>Used DLCs: @GetDLCsNames(lobby)</p>
+										</div>
 										<div class="card-body text-dark">
 											<ul>
 												@foreach (var player in lobby.Players!)
@@ -72,6 +82,26 @@ else
 
 
 @code {
+	private string GetDLCsNames(Lobby lobby)
+	{
+		string res = "";
+		foreach (var item in lobby.DLCs)
+		{
+			if (item.Value)
+			{
+				if (res=="")
+				{
+					res += item.Key;
+				}
+				else
+				{
+					res += ", " + item.Key;
+				}
+			}
+		}
+		return res;
+	}
+
 	[Inject]
 	private NavigationManager? NavigationManager { get; set; }
 
@@ -210,7 +240,7 @@ else
 		}
 		else
 		{
-			//valami hibakiírás?
+			throw new Exception("Something went wrong");
 		}
 	}
 
@@ -227,7 +257,7 @@ else
 		}
 		else
 		{
-			//valami hibakiírás?
+			throw new Exception("Something went wrong");
 		}
 	}
 
@@ -243,7 +273,7 @@ else
 		}
 		else
 		{
-			//valami hibakiírás?
+			throw new Exception("Something went wrong");
 		}
 	}
 

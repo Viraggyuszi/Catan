@@ -1,0 +1,232 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
+  <Class Name="BLL.GameActions.GameActionHandler">
+    <Position X="7.5" Y="0.5" Width="4.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <AssociationLine Name="BuildVillageAction" Type="BLL.GameActions.BuildVillageAction.IBuildVillageAction" FixedFromPoint="true">
+      <Path>
+        <Point X="9.125" Y="1.411" />
+        <Point X="9.125" Y="3.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="BuildCityAction" Type="BLL.GameActions.BuildCityAction.IBuildCityAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="0.813" />
+        <Point X="5.125" Y="0.813" />
+        <Point X="5.125" Y="3.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="BuildRoadAction" Type="BLL.GameActions.BuildRoadAction.IBuildRoadAction" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="1.25" />
+        <Point X="7.375" Y="1.25" />
+        <Point X="7.375" Y="4.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="EndTurnAction" Type="BLL.GameActions.EndTurnAction.IEndTurnAction" FixedToPoint="true">
+      <Path>
+        <Point X="10" Y="1.411" />
+        <Point X="10" Y="2.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="BuildInitialVillageAction" Type="BLL.GameActions.BuildInitialVillageAction.IBuildInitialVillageAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="1.188" />
+        <Point X="7.125" Y="1.188" />
+        <Point X="7.125" Y="3.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="BuildInitialRoadAction" Type="BLL.GameActions.BuildInitialRoadAction.IBuildInitialRoadAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="0.938" />
+        <Point X="5.375" Y="0.938" />
+        <Point X="5.375" Y="4.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="BuildInitialShipAction" Type="BLL.GameActions.BuildInitialShipAction.IBuildInitialShipAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="1.062" />
+        <Point X="6.094" Y="1.062" />
+        <Point X="6.094" Y="2.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="RegisterTradeOfferWithBankAction" Type="BLL.GameActions.RegisterTradeOfferWithBankAction.IRegisterTradeOfferWithBankAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="12" Y="0.938" />
+        <Point X="13.125" Y="0.938" />
+        <Point X="13.125" Y="3.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="RegisterTradeOfferAction" Type="BLL.GameActions.RegisterTradeOfferAction.IRegisterTradeOfferAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="12" Y="1.062" />
+        <Point X="12.25" Y="1.062" />
+        <Point X="12.25" Y="2.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="AcceptTradeOfferAction" Type="BLL.GameActions.AcceptTradeOfferAction.IAcceptTradeOfferAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="0.688" />
+        <Point X="4.25" Y="0.688" />
+        <Point X="4.25" Y="2.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="ThrowResourcesAction" Type="BLL.GameActions.ThrowResourcesAction.IThrowResourcesAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="12" Y="0.688" />
+        <Point X="14.281" Y="0.688" />
+        <Point X="14.281" Y="2.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="RollDiceAction" Type="BLL.GameActions.RollDiceAction.IDiceRollAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="12" Y="0.813" />
+        <Point X="13.375" Y="0.813" />
+        <Point X="13.375" Y="4.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="PlayCardAction" Type="BLL.GameActions.PlayCardAction.IPlayCardAction" FixedFromPoint="true">
+      <Path>
+        <Point X="11.375" Y="1.411" />
+        <Point X="11.375" Y="4.5" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AQDAAAIRQABCYDAAAAEQAAggAgAAUgCCgQKBAQBEQAA=</HashCode>
+      <FileName>GameActions\GameActionHandler.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="BuildVillageAction" />
+      <Property Name="BuildCityAction" />
+      <Property Name="BuildRoadAction" />
+      <Property Name="EndTurnAction" />
+      <Property Name="BuildInitialVillageAction" />
+      <Property Name="BuildInitialRoadAction" />
+      <Property Name="BuildInitialShipAction" />
+      <Property Name="MoveRobberAction" />
+      <Property Name="RegisterTradeOfferWithBankAction" />
+      <Property Name="RegisterTradeOfferAction" />
+      <Property Name="AcceptTradeOfferAction" />
+      <Property Name="ThrowResourcesAction" />
+      <Property Name="RollDiceAction" />
+      <Property Name="BuildShipAction" />
+      <Property Name="BuyCardAction" />
+      <Property Name="PlayCardAction" />
+    </ShowAsAssociation>
+  </Class>
+  <Interface Name="BLL.GameActions.AcceptTradeOfferAction.IAcceptTradeOfferAction" Collapsed="true">
+    <Position X="3.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\AcceptTradeOfferAction\IAcceptTradeOfferAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildCityAction.IBuildCityAction" Collapsed="true">
+    <Position X="3.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildCityAction\IBuildCityAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildInitialRoadAction.IBuildInitialRoadAction" Collapsed="true">
+    <Position X="4" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildInitialRoadAction\IBuildInitialRoadAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildInitialShipAction.IBuildInitialShipAction" Collapsed="true">
+    <Position X="5.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildInitialShipAction\IBuildInitialShipAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildInitialVillageAction.IBuildInitialVillageAction" Collapsed="true">
+    <Position X="5.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildInitialVillageAction\IBuildInitialVillageAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildRoadAction.IBuildRoadAction" Collapsed="true">
+    <Position X="6" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildRoadAction\IBuildRoadAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildShipAction.IBuildShipAction" Collapsed="true">
+    <Position X="7.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildShipAction\IBuildShipAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildVillageAction.IBuildVillageAction" Collapsed="true">
+    <Position X="7.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildVillageAction\IBuildVillageAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuyCardAction.IBuyCardAction" Collapsed="true">
+    <Position X="8" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuyCardAction\IBuyCardAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.EndTurnAction.IEndTurnAction" Collapsed="true">
+    <Position X="9.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\EndTurnAction\IEndTurnAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.MoveRobberAction.IMoveRobberAction" Collapsed="true">
+    <Position X="9.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\MoveRobberAction\IMoveRobberAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.PlayCardAction.IPlayCardAction" Collapsed="true">
+    <Position X="10" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\PlayCardAction\IPlayCardAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.RegisterTradeOfferAction.IRegisterTradeOfferAction" Collapsed="true">
+    <Position X="11.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\RegisterTradeOfferAction\IRegisterTradeOfferAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.RegisterTradeOfferWithBankAction.IRegisterTradeOfferWithBankAction" Collapsed="true">
+    <Position X="11.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\RegisterTradeOfferWithBankAction\IRegisterTradeOfferWithBankAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.RollDiceAction.IDiceRollAction" Collapsed="true">
+    <Position X="12" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\RollDiceAction\IDiceRollAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.ThrowResourcesAction.IThrowResourcesAction" Collapsed="true">
+    <Position X="13.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\ThrowResourcesAction\IThrowResourcesAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

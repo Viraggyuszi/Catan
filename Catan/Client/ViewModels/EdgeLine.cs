@@ -14,7 +14,7 @@ namespace Catan.Client.ViewModels
 			Vertex normalisedVector= new Vertex() { X=vector.X/length, Y=vector.Y/length };
 			Vertex halfway = new Vertex() { X = (A.X + B.X) / 2, Y = (A.Y + B.Y) / 2 };
 			Vertex normal = new Vertex() { X = normalisedVector.Y, Y = -normalisedVector.X };
-			length *= 3 * 0.125;
+			length *= 2 * 0.16667;
 			int width = 4;
 			if (edge.EdgeType == EdgeType.Ship)
 			{

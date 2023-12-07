@@ -63,8 +63,6 @@ namespace BLL.GameActions
                 RegisterTradeOfferAction = new BaseRegisterTradeOfferAction(),
                 RegisterTradeOfferWithBankAction = new BaseRegisterTradeOfferWithBankAction(),
                 ThrowResourcesAction = new BaseThrowResourcesAction(),
-                BuildShipAction = null,
-                BuildInitialShipAction = null,
                 BuyCardAction = new BaseBuyCardAction(),
                 PlayCardAction = new BasePlayCardAction()
             };

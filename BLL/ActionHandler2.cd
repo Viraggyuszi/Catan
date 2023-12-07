@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="BLL.GameActions.GameActionHandler" Collapsed="true">
+    <Position X="5.5" Y="0.5" Width="1.5" />
+    <AssociationLine Name="BuildCityAction" Type="BLL.GameActions.BuildCityAction.IBuildCityAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.609" Y="1.062" />
+        <Point X="6.609" Y="1.437" />
+        <Point X="7.562" Y="1.437" />
+        <Point X="7.562" Y="2.75" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="BuildInitialShipAction" Type="BLL.GameActions.BuildInitialShipAction.IBuildInitialShipAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.156" Y="1.062" />
+        <Point X="6.156" Y="1.437" />
+        <Point X="5.188" Y="1.437" />
+        <Point X="5.188" Y="2.75" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="BuildRoadAction" Type="BLL.GameActions.BuildRoadAction.IBuildRoadAction" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="5.5" Y="0.875" />
+        <Point X="3.062" Y="0.875" />
+        <Point X="3.062" Y="2.75" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AQDAAAIRQABCYDAAAAEQAAggAgAAUgCCgQKBAQBEQAA=</HashCode>
+      <FileName>GameActions\GameActionHandler.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="AcceptTradeOfferAction" />
+      <Property Name="BuildCityAction" />
+      <Property Name="BuildInitialShipAction" />
+      <Property Name="BuildRoadAction" />
+    </ShowAsAssociation>
+  </Class>
+  <Interface Name="BLL.GameActions.AcceptTradeOfferAction.IAcceptTradeOfferAction" Collapsed="true">
+    <Position X="9" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\AcceptTradeOfferAction\IAcceptTradeOfferAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildCityAction.IBuildCityAction" Collapsed="true">
+    <Position X="6.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildCityAction\IBuildCityAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildInitialShipAction.IBuildInitialShipAction" Collapsed="true">
+    <Position X="4.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildInitialShipAction\IBuildInitialShipAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BLL.GameActions.BuildRoadAction.IBuildRoadAction" Collapsed="true">
+    <Position X="2.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameActions\BuildRoadAction\IBuildRoadAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

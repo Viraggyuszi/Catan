@@ -20,11 +20,9 @@ namespace Catan.Server.Controllers
         {
             if (registerDTO is null)
             {
-                return new ApiDTO<string>() { Success = false, Value = "Gib username or password" };
+                return new ApiDTO<string>() { Success = false, Value = "Invalid username or password" };
             }
-            
             return await _databaseService.RegisterNewUser(registerDTO);
-            
         }
         [HttpPost("login")]
         public async Task<ActionResult<ApiDTO<string>>> Login([FromBody] LoginDTO loginDTO)
