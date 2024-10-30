@@ -1,0 +1,22 @@
+﻿@page "/redirected"
+
+@inject IJSRuntime JS
+
+
+<h3>RedirectPage</h3>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Token { get; set; }
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "loginToken", Token);
+        await JS.InvokeVoidAsync("localStorage.setItem", "loginTokenExpire", DateTime.Now.AddHours(2));
+        NavigationManager.NavigateTo("/");
+    }
+}
