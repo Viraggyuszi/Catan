@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Catan.Client;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -48,7 +49,19 @@ builder.Services.AddAuthentication(options =>
 })
 	.AddJwtBearer(options =>
 	{
-		options.SaveToken = true;
+        var rsa = RSA.Create();
+        var publicKey = @"-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEA9hP5tjExFT2+iNb7hAkBCpdOTvHMz2Jc89LQ//grVUXeZRNUZ8Lc
+Jcg7ratGv4RYPUq3/Ddfq7WqhZlLv5wyuiQAeSXl5daJZUHKihLUo53Yr6+6Pxa+
+Dy7Q6GtajuNaxGJsdMCPqWHFs59rUJothxBOvS0zMNlqOah1zMTvaIgT7z/YWd2S
+l8OfpDGV9PFWvVTFagdfHOL3kvjLmVHDqraYv38enq08WjkJyQ0ygh1PzmL4nEhp
+UgczWYJ27eUMsEHI2teQ0oCJXX5QoksT2D5DcBA4rum0o+sFN9YAurcoVEhFHQVY
+Bam2qBayNhas/r4u32yDWQUZmF19VreMWQIDAQAB
+-----END RSA PUBLIC KEY-----";
+        rsa.ImportFromPem(publicKey.AsSpan());
+
+
+        options.SaveToken = true;
 		options.RequireHttpsMetadata = false;
 		options.TokenValidationParameters = new TokenValidationParameters()
 		{
@@ -57,7 +70,7 @@ builder.Services.AddAuthentication(options =>
 			ValidateLifetime = true,
 			ValidAudience = configuration["JWT:ValidAudience"],
 			ValidIssuer = configuration["JWT:ValidIssuer"],
-			IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!))
+			IssuerSigningKey = new RsaSecurityKey(rsa)
 		};
 	});
 
