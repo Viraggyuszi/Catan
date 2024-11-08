@@ -19,7 +19,7 @@
     {
         await base.OnParametersSetAsync();
 
-        var response = await httpClient.PostAsJsonAsync("http://localhost:5008/api/games/token", new RequestTokenDTO() { AuthCode = AuthCode, Client = Client, Game = "Catan" });
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5008/api/token/exchange", new RequestTokenDTO() { AuthCode = AuthCode, Client = Client, Game = "Catan" });
 
         if (response.IsSuccessStatusCode)
         {
