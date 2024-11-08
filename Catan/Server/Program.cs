@@ -50,14 +50,7 @@ builder.Services.AddAuthentication(options =>
 	.AddJwtBearer(options =>
 	{
         var rsa = RSA.Create();
-        var publicKey = @"-----BEGIN RSA PUBLIC KEY-----
-MIIBCgKCAQEA9hP5tjExFT2+iNb7hAkBCpdOTvHMz2Jc89LQ//grVUXeZRNUZ8Lc
-Jcg7ratGv4RYPUq3/Ddfq7WqhZlLv5wyuiQAeSXl5daJZUHKihLUo53Yr6+6Pxa+
-Dy7Q6GtajuNaxGJsdMCPqWHFs59rUJothxBOvS0zMNlqOah1zMTvaIgT7z/YWd2S
-l8OfpDGV9PFWvVTFagdfHOL3kvjLmVHDqraYv38enq08WjkJyQ0ygh1PzmL4nEhp
-UgczWYJ27eUMsEHI2teQ0oCJXX5QoksT2D5DcBA4rum0o+sFN9YAurcoVEhFHQVY
-Bam2qBayNhas/r4u32yDWQUZmF19VreMWQIDAQAB
------END RSA PUBLIC KEY-----";
+        var publicKey = configuration["JWT:PublicKey"];
         rsa.ImportFromPem(publicKey.AsSpan());
 
 
