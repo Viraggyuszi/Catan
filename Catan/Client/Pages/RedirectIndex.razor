@@ -24,6 +24,7 @@
         if (response.IsSuccessStatusCode)
         {
             var tokenDto = await response.Content.ReadFromJsonAsync<TokenDTO>();
+            await JS.InvokeVoidAsync("localStorage.setItem", "userName", Client);
             await JS.InvokeVoidAsync("localStorage.setItem", "loginToken", tokenDto.Token);
             await JS.InvokeVoidAsync("localStorage.setItem", "loginTokenExpire", DateTime.Now.AddHours(1));
             NavigationManager.NavigateTo("/");
