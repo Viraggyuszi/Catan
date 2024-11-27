@@ -27,7 +27,7 @@ namespace BLL.Services
             var jwtToken = handler.ReadToken(actor.Token) as JwtSecurityToken;
             if (jwtToken is not null)
             {
-                var usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "username");
+                var usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "clientName");
                 if (usernameClaim is not null)
                 {
                     if (usernameClaim.Value.Equals(actor.Name))

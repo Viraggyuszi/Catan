@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Catan.Client;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -48,7 +49,12 @@ builder.Services.AddAuthentication(options =>
 })
 	.AddJwtBearer(options =>
 	{
-		options.SaveToken = true;
+        var rsa = RSA.Create();
+        var publicKey = configuration["JWT:PublicKey"];
+        rsa.ImportFromPem(publicKey.AsSpan());
+
+
+        options.SaveToken = true;
 		options.RequireHttpsMetadata = false;
 		options.TokenValidationParameters = new TokenValidationParameters()
 		{
@@ -57,7 +63,7 @@ builder.Services.AddAuthentication(options =>
 			ValidateLifetime = true,
 			ValidAudience = configuration["JWT:ValidAudience"],
 			ValidIssuer = configuration["JWT:ValidIssuer"],
-			IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!))
+			IssuerSigningKey = new RsaSecurityKey(rsa)
 		};
 	});
 

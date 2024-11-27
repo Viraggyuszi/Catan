@@ -1,0 +1,56 @@
+﻿@page "/redirected/{AuthCode}/{Client}"
+
+@inject IJSRuntime JS
+@inject HttpClient httpClient
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string AuthCode { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Client { get; set; }
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5008/api/token/exchange", new RequestTokenDTO() { AuthCode = AuthCode, Client = Client, Game = "Catan" });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var tokenDto = await response.Content.ReadFromJsonAsync<TokenDTO>();
+            await JS.InvokeVoidAsync("localStorage.setItem", "userName", Client);
+            await JS.InvokeVoidAsync("localStorage.setItem", "loginToken", tokenDto.Token);
+            await JS.InvokeVoidAsync("localStorage.setItem", "loginTokenExpire", DateTime.Now.AddHours(1));
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(error);
+        }
+
+
+        
+
+    }
+    /// <summary>
+    /// copied from the dashboard application 
+    /// </summary>
+    private class RequestTokenDTO
+    {
+        public string AuthCode { get; set; }
+        public string Client { get; set; }
+        public string Game { get; set; }
+    }
+    private class TokenDTO
+    {
+        public string Token { get; set; }
+        public int RefreshToken { get; set; }
+    }
+}
